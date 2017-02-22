@@ -35,6 +35,21 @@ func ArtmCreateMasterModel() (int, error) {
 	return int(masterID), nil
 }
 
+//ArtmImportModel loads model from file ie matrices of size |T|*|W| topics/words
+func ArtmImportModel(masterModelID int, modelFile string) error {
+	importModelConfig := &ImportModelArgs{}
+	importModelConfig.FileName = &modelFile
+	message, err := proto.Marshal(importModelConfig)
+	if err != nil {
+		return fmt.Errorf("Protobuf ImportModelArgs marshaling error: %s", err)
+	}
+	errorID := C.ArtmImportModel(C.int(masterModelID), C.int64_t(len(message)), C.CString(string(message)))
+	if errorID < 0 {
+		fmt.Printf("Load model error %s\n", ARTM_ERRORS[-errorID])
+	}
+	return nil
+}
+
 /*
 var MODEL_FILE string
 
