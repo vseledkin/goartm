@@ -50,51 +50,11 @@ func ArtmImportModel(masterModelID int, modelFile string) error {
 	return nil
 }
 
-/*
-var MODEL_FILE string
-
-func main() {
-	flag.StringVar(&MODEL_FILE, "model", "", "artm model file")
-	flag.Parse()
-
-	if len(MODEL_FILE) == 0 {
-		flag.Usage()
-		return
+//ArtmDisposeMasterComponent disposes master component
+func ArtmDisposeMasterComponent(masterModelID int) error {
+	errorID := C.ArtmDisposeMasterComponent(C.int(masterModelID))
+	if errorID < 0 {
+		fmt.Errorf("Dispose model error %s\n", ARTM_ERRORS[-errorID])
 	}
-	masterConfig := &MasterModelConfig{}
-	data, err := proto.Marshal(masterConfig)
-	if err != nil {
-		log.Fatal("protobuf marshaling error: ", err)
-	}
-
-	/*
-			        newTest := &example.Test{}
-		        err = proto.Unmarshal(data, newTest)
-		        if err != nil {
-		            log.Fatal("unmarshaling error: ", err)
-		        }
-
-
-	// create master object
-	masterID := C.int(C.ArtmCreateMasterModel(C.int64_t(len(data)), C.CString(string(data))))
-	if masterID < 0 {
-		fmt.Printf("Master creation error %s ok\n", ARTM_ERRORS[-masterID])
-	} else {
-		fmt.Printf("Master created with id %d ok\n", masterID)
-	}
-	// load model
-
-	importModelConfig := &ImportModelArgs{}
-	importModelConfig.FileName = &MODEL_FILE
-	data, err = proto.Marshal(importModelConfig)
-	if err != nil {
-		log.Fatal("protobuf marshaling error: ", err)
-	}
-	errorID := C.ArtmImportModel(masterID, C.int64_t(len(data)), C.CString(string(data)))
-	fmt.Printf("Master load message %s\n", ARTM_ERRORS[-errorID])
-
-	// destroy master component
-	errorID = C.ArtmDisposeMasterComponent(masterID)
-	fmt.Printf("Master destroy message %s\n", ARTM_ERRORS[-errorID])
+	return nil
 }
-*/

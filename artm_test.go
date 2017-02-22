@@ -8,6 +8,11 @@ func TestCreateMainComponent(t *testing.T) {
 		t.Error(err)
 	}
 	t.Logf("Successfully created master model with id %d", modelID)
+	err = ArtmDisposeMasterComponent(modelID)
+	if err != nil {
+		t.Error(err)
+	}
+	t.Logf("Successfully disposed master model with id %d", modelID)
 }
 
 func TestArtmImportModel(t *testing.T) {
@@ -21,4 +26,9 @@ func TestArtmImportModel(t *testing.T) {
 		t.Error(err)
 	}
 	t.Logf("Successfully imported model into %d", modelID)
+	err = ArtmDisposeMasterComponent(modelID)
+	if err != nil {
+		t.Error(err)
+	}
+	t.Logf("Successfully disposed master model with id %d", modelID)
 }
