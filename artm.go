@@ -24,40 +24,123 @@ var ARTM_ERRORS = []string{
 	"ARTM_DISK_WRITE_ERROR",
 }
 
-func New(conf interface{}) interface{} {
-	switch t := conf.(type) {
-	case *MasterModelConfig:
-		var MasterModelConfig_PwtName string = Default_MasterModelConfig_PwtName
-		var MasterModelConfig_NwtName string = Default_MasterModelConfig_NwtName
-		var MasterModelConfig_ReuseTheta bool = Default_MasterModelConfig_ReuseTheta
-		var MasterModelConfig_OptForAvx bool = Default_MasterModelConfig_OptForAvx
-		var MasterModelConfig_CacheTheta bool = Default_MasterModelConfig_CacheTheta
+func NewGetTopicModelArgs() *GetTopicModelArgs {
+	eps := Default_GetTopicModelArgs_Eps
+	ml := Default_GetTopicModelArgs_MatrixLayout
+	return &GetTopicModelArgs{Eps: &eps, MatrixLayout: &ml}
+}
 
-		t.NwtName = &MasterModelConfig_NwtName
-		t.PwtName = &MasterModelConfig_PwtName
-		t.ReuseTheta = &MasterModelConfig_ReuseTheta
-		t.OptForAvx = &MasterModelConfig_OptForAvx
-		t.CacheTheta = &MasterModelConfig_CacheTheta
-		return t
-	case *GetDictionaryArgs:
-		return t
-	case *ImportModelArgs:
-		return t
-	case *ImportDictionaryArgs:
-		return t
-	default:
-		panic("unsupported type")
-	}
+func NewGetDictionaryArgs(dicName string) *GetDictionaryArgs {
+	return &GetDictionaryArgs{DictionaryName: &dicName}
+}
+
+func NewImportModelArgs(fileName string) *ImportModelArgs {
+	return &ImportModelArgs{FileName: &fileName}
+}
+
+func NewImportDictionaryArgs(dicName, fileName string) *ImportDictionaryArgs {
+	return &ImportDictionaryArgs{FileName: &fileName, DictionaryName: &dicName}
+}
+
+func NewGetScoreValueArgs(scoreName string) *GetScoreValueArgs {
+	return &GetScoreValueArgs{ScoreName: &scoreName}
+}
+
+func NewMasterModelConfig() *MasterModelConfig {
+	c := &MasterModelConfig{}
+	var MasterModelConfig_PwtName string = Default_MasterModelConfig_PwtName
+	var MasterModelConfig_NwtName string = Default_MasterModelConfig_NwtName
+	var MasterModelConfig_ReuseTheta bool = Default_MasterModelConfig_ReuseTheta
+	var MasterModelConfig_OptForAvx bool = Default_MasterModelConfig_OptForAvx
+	var MasterModelConfig_CacheTheta bool = Default_MasterModelConfig_CacheTheta
+
+	c.NwtName = &MasterModelConfig_NwtName
+	c.PwtName = &MasterModelConfig_PwtName
+	c.ReuseTheta = &MasterModelConfig_ReuseTheta
+	c.OptForAvx = &MasterModelConfig_OptForAvx
+	c.CacheTheta = &MasterModelConfig_CacheTheta
+	return c
 }
 
 func ArtmGetLastErrorMessage() error {
 	err := C.ArtmGetLastErrorMessage()
-	defer C.free(unsafe.Pointer(err))
+	//defer C.free(unsafe.Pointer(err)) may not be allocated
 	errorStr := C.GoString(err)
 	if len(errorStr) > 0 {
+		//C.free(unsafe.Pointer(err))
 		return fmt.Errorf("%s", errorStr)
 	}
 	return nil
+}
+
+func artmCopyRequestedMessage(length C.int64_t, messagePointer proto.Message) error {
+	// allocate memory for message being filled
+	buffer := make([]byte, length)
+	// fill memory with message data
+	errorID := C.ArtmCopyRequestedMessage(length, (*C.char)(unsafe.Pointer(&buffer[0])))
+	// check errors
+	if errorID < 0 {
+		return fmt.Errorf("Copy requested data error: %s\n", ARTM_ERRORS[-errorID])
+	}
+
+	if err := ArtmGetLastErrorMessage(); err != nil {
+		return err
+	}
+
+	if err := proto.Unmarshal(buffer, messagePointer); err != nil {
+		return fmt.Errorf("Protobuf message unmarshaling error: %s", err)
+	}
+	return nil
+}
+
+//ArtmRequestScore create master model
+func ArtmRequestScore(masterModelID int, config *GetScoreValueArgs) (*ScoreData, error) {
+	message, err := proto.Marshal(config)
+	if err != nil {
+		return nil, fmt.Errorf("Protobuf GetScoreValueArgs marshaling error: %s", err)
+	}
+
+	messageLength := C.ArtmRequestScore(C.int(masterModelID), C.int64_t(len(message)), (*C.char)(unsafe.Pointer(&message[0])))
+	err = ArtmGetLastErrorMessage()
+	if err != nil {
+		return nil, err
+	}
+	if messageLength < 0 {
+		return nil, fmt.Errorf("Get requested data error: %s\n", ARTM_ERRORS[-messageLength])
+	}
+
+	scoreData := &ScoreData{}
+	err = artmCopyRequestedMessage(messageLength, scoreData)
+	if err != nil {
+		return nil, err
+	}
+
+	return scoreData, nil
+}
+
+//ArtmRequestTopicModel
+func ArtmRequestTopicModel(masterModelID int, config *GetTopicModelArgs) (*TopicModel, error) {
+	message, err := proto.Marshal(config)
+	if err != nil {
+		return nil, fmt.Errorf("Protobuf GetTopicModelArgs marshaling error: %s", err)
+	}
+
+	messageLength := C.ArtmRequestTopicModel(C.int(masterModelID), C.int64_t(len(message)), (*C.char)(unsafe.Pointer(&message[0])))
+	err = ArtmGetLastErrorMessage()
+	if err != nil {
+		return nil, err
+	}
+	if messageLength < 0 {
+		return nil, fmt.Errorf("Get requested data error: %s\n", ARTM_ERRORS[-messageLength])
+	}
+
+	topicModel := &TopicModel{}
+	err = artmCopyRequestedMessage(messageLength, topicModel)
+	if err != nil {
+		return nil, err
+	}
+
+	return topicModel, nil
 }
 
 //ArtmCreateMasterModel create master model
@@ -136,30 +219,10 @@ func ArtmRequestDictionary(masterModelID int, conf *GetDictionaryArgs) (*Diction
 		return nil, err
 	}
 
-	if messageLength < 0 {
-		return nil, fmt.Errorf("Get model dictionary error: %s\n", ARTM_ERRORS[-messageLength])
-	}
-
-	buffer := make([]byte, messageLength)
-
-	errorID := C.ArtmCopyRequestedMessage(messageLength, (*C.char)(unsafe.Pointer(&buffer[0])))
-	err = ArtmGetLastErrorMessage()
-	if err != nil {
+	dictionaryData := &DictionaryData{}
+	if err = artmCopyRequestedMessage(messageLength, dictionaryData); err != nil {
 		return nil, err
 	}
-	if errorID < 0 {
-		return nil, fmt.Errorf("Copy requested model dictionary: %s\n", ARTM_ERRORS[-errorID])
-	}
-
-	fmt.Printf("[%#v]", buffer[:10])
-
-	dictionaryData := &DictionaryData{}
-
-	err = proto.Unmarshal(buffer, dictionaryData)
-	if err != nil {
-		return nil, fmt.Errorf("Protobuf DictionaryData unmarshaling error: %s", err)
-	}
-
 	return dictionaryData, nil
 }
 

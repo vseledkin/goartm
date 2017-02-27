@@ -15,11 +15,17 @@ extern "C" {
 #endif
 
   DLL_PUBLIC int64_t ArtmDuplicateMasterComponent(int master_id, int64_t length, const char* duplicate_master_args);
+
+  //Wrapper available
   DLL_PUBLIC int64_t ArtmCreateMasterModel(int64_t length, const char* master_model_config);
+
   DLL_PUBLIC int64_t ArtmReconfigureMasterModel(int master_id, int64_t length, const char* master_model_config);
   DLL_PUBLIC int64_t ArtmReconfigureTopicName(int master_id, int64_t length, const char* master_model_config);
+
+  //Wrapper available
   DLL_PUBLIC int64_t ArtmDisposeMasterComponent(int master_id);
 
+  //Wrapper available
   DLL_PUBLIC int64_t ArtmDisposeModel(int master_id, const char* model_name);
 
   DLL_PUBLIC int64_t ArtmClearThetaCache(int master_id, int64_t length, const char* clear_theta_cache_args);
@@ -33,12 +39,16 @@ extern "C" {
   DLL_PUBLIC int64_t ArtmGatherDictionary(int master_id, int64_t length, const char* gather_dictionary_args);
   DLL_PUBLIC int64_t ArtmFilterDictionary(int master_id, int64_t length, const char* filter_dictionary_args);
   DLL_PUBLIC int64_t ArtmCreateDictionary(int master_id, int64_t length, const char* dictionary_data);
-  DLL_PUBLIC int64_t ArtmCreateDictionaryNamed(int master_id, int64_t length,
-                                               const char* dictionary_data, const char* name);
+  DLL_PUBLIC int64_t ArtmCreateDictionaryNamed(int master_id, int64_t length, const char* dictionary_data, const char* name);
+
+  //Wrapper available
   DLL_PUBLIC int64_t ArtmRequestDictionary(int master_id, int64_t length, const char* request_dictionary_args);
+  //Wrapper available
   DLL_PUBLIC int64_t ArtmDisposeDictionary(int master_id, const char* dictionary_name);
 
+  //Wrapper available
   DLL_PUBLIC int64_t ArtmImportDictionary(int master_id, int64_t length, const char* import_dictionary_args);
+
   DLL_PUBLIC int64_t ArtmExportDictionary(int master_id, int64_t length, const char* export_dictionary_args);
   DLL_PUBLIC int64_t ArtmParseCollection(int64_t length, const char* collection_parser_config);
 
@@ -73,9 +83,14 @@ extern "C" {
 
   DLL_PUBLIC int64_t ArtmRequestThetaMatrix(int master_id, int64_t length, const char* get_theta_args);
   DLL_PUBLIC int64_t ArtmRequestThetaMatrixExternal(int master_id, int64_t length, const char* get_theta_args);
+
+  //Wrapper available
   DLL_PUBLIC int64_t ArtmRequestTopicModel(int master_id, int64_t length, const char* get_model_args);
   DLL_PUBLIC int64_t ArtmRequestTopicModelExternal(int master_id, int64_t length, const char* get_model_args);
+
+  //Wrapper available
   DLL_PUBLIC int64_t ArtmRequestScore(int master_id, int64_t length, const char* get_score_args);
+
   DLL_PUBLIC int64_t ArtmRequestScoreArray(int master_id, int64_t length, const char* get_score_args);
   DLL_PUBLIC int64_t ArtmRequestMasterComponentInfo(int master_id, int64_t length, const char* get_master_info_args);
   DLL_PUBLIC int64_t ArtmRequestLoadBatch(const char* filename);
@@ -85,7 +100,10 @@ extern "C" {
   DLL_PUBLIC int64_t ArtmAwaitOperation(int operation_id, int64_t length, const char* await_operation_args);
 
   DLL_PUBLIC int64_t ArtmSaveBatch(const char* disk_path, int64_t length, const char* batch);
+
+  //Wrapper available
   DLL_PUBLIC const char* ArtmGetLastErrorMessage();
+
   DLL_PUBLIC const char* ArtmGetVersion();
   DLL_PUBLIC int64_t ArtmConfigureLogging(int64_t length, const char* configure_logging_args);
 
