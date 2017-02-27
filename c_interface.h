@@ -92,7 +92,10 @@ extern "C" {
   DLL_PUBLIC int64_t ArtmRequestScore(int master_id, int64_t length, const char* get_score_args);
 
   DLL_PUBLIC int64_t ArtmRequestScoreArray(int master_id, int64_t length, const char* get_score_args);
+
+  //Wrapper available
   DLL_PUBLIC int64_t ArtmRequestMasterComponentInfo(int master_id, int64_t length, const char* get_master_info_args);
+
   DLL_PUBLIC int64_t ArtmRequestLoadBatch(const char* filename);
   DLL_PUBLIC int64_t ArtmCopyRequestedMessage(int64_t length, char* address);
   DLL_PUBLIC int64_t ArtmCopyRequestedObject(int64_t length, char* address);

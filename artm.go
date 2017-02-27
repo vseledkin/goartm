@@ -24,6 +24,10 @@ var ARTM_ERRORS = []string{
 	"ARTM_DISK_WRITE_ERROR",
 }
 
+func NewGetMasterComponentInfoArgs() *GetMasterComponentInfoArgs {
+	return &GetMasterComponentInfoArgs{}
+}
+
 func NewGetTopicModelArgs() *GetTopicModelArgs {
 	eps := Default_GetTopicModelArgs_Eps
 	ml := Default_GetTopicModelArgs_MatrixLayout
@@ -116,6 +120,31 @@ func ArtmRequestScore(masterModelID int, config *GetScoreValueArgs) (*ScoreData,
 	}
 
 	return scoreData, nil
+}
+
+//ArtmRequestMasterComponentInfo create master model
+func ArtmRequestMasterComponentInfo(masterModelID int, config *GetMasterComponentInfoArgs) (*MasterComponentInfo, error) {
+	message, err := proto.Marshal(config)
+	if err != nil {
+		return nil, fmt.Errorf("Protobuf GetMasterComponentInfoArgs marshaling error: %s", err)
+	}
+
+	messageLength := C.ArtmRequestMasterComponentInfo(C.int(masterModelID), C.int64_t(len(message)), (*C.char)(unsafe.Pointer(&message)))
+	err = ArtmGetLastErrorMessage()
+	if err != nil {
+		return nil, err
+	}
+	if messageLength < 0 {
+		return nil, fmt.Errorf("Get requested data error: %s\n", ARTM_ERRORS[-messageLength])
+	}
+
+	masterComponentInfo := &MasterComponentInfo{}
+	err = artmCopyRequestedMessage(messageLength, masterComponentInfo)
+	if err != nil {
+		return nil, err
+	}
+
+	return masterComponentInfo, nil
 }
 
 //ArtmRequestTopicModel
