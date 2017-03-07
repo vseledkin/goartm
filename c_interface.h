@@ -60,6 +60,8 @@ extern "C" {
                                                   const char* topic_model, const char* name);
   DLL_PUBLIC int64_t ArtmInitializeModel(int master_id, int64_t length, const char* init_model_args);
   DLL_PUBLIC int64_t ArtmExportModel(int master_id, int64_t length, const char* export_model_args);
+
+  //Wrapper available
   DLL_PUBLIC int64_t ArtmImportModel(int master_id, int64_t length, const char* import_model_args);
   DLL_PUBLIC int64_t ArtmAttachModel(int master_id, int64_t length, const char* attach_model_args,
                                      int64_t address_length, char* address);
@@ -74,8 +76,11 @@ extern "C" {
   DLL_PUBLIC int64_t ArtmFitOfflineMasterModel(int master_id, int64_t length,
                                                const char* fit_offline_master_model_args);
   DLL_PUBLIC int64_t ArtmFitOnlineMasterModel(int master_id, int64_t length, const char* fit_online_master_model_args);
+
+  //Wrapper available
   DLL_PUBLIC int64_t ArtmRequestTransformMasterModel(int master_id, int64_t length,
                                                      const char* transform_master_model_args);
+  //Wrapper available
   DLL_PUBLIC int64_t ArtmRequestTransformMasterModelExternal(int master_id, int64_t length,
                                                              const char* transform_master_model_args);
 

@@ -9,6 +9,8 @@ import (
 
 	"unsafe"
 
+	"crypto/rand"
+
 	"github.com/golang/protobuf/proto"
 )
 
@@ -22,6 +24,26 @@ var ARTM_ERRORS = []string{
 	"ARTM_INVALID_OPERATION",
 	"ARTM_DISK_READ_ERROR",
 	"ARTM_DISK_WRITE_ERROR",
+}
+
+func NewTransformMasterModelArgs() *TransformMasterModelArgs {
+	matrixType := Default_TransformMasterModelArgs_ThetaMatrixType
+	return &TransformMasterModelArgs{ThetaMatrixType: &matrixType}
+}
+
+func NewBatch() *Batch {
+	b := make([]byte, 16)
+	_, err := rand.Read(b)
+	if err != nil {
+		panic(err)
+	}
+
+	guid := fmt.Sprintf("%x-%x-%x-%x-%x", b[0:4], b[4:6], b[6:8], b[8:10], b[10:])
+	return &Batch{Id: &guid}
+}
+
+func NewItem() *Item {
+	return &Item{}
 }
 
 func NewGetMasterComponentInfoArgs() *GetMasterComponentInfoArgs {
@@ -266,4 +288,44 @@ func ArtmDisposeDictionary(masterModelID int, dictionaryName string) error {
 		return err
 	}
 	return nil
+}
+
+//ArtmRequestTransformMasterModel apply model to new data
+func ArtmRequestTransformMasterModel(masterModelID int, conf *TransformMasterModelArgs) (*ThetaMatrix, error) {
+	message, err := proto.Marshal(conf)
+	if err != nil {
+		return nil, fmt.Errorf("Protobuf TransformMasterModelArgs marshaling error: %s", err)
+	}
+	p := unsafe.Pointer(&message[0])
+	messageLength := C.ArtmRequestTransformMasterModel(C.int(masterModelID), C.int64_t(len(message)), (*C.char)(p))
+	err = ArtmGetLastErrorMessage()
+	if err != nil {
+		return nil, err
+	}
+
+	thetaMatrix := &ThetaMatrix{}
+	if err = artmCopyRequestedMessage(messageLength, thetaMatrix); err != nil {
+		return nil, err
+	}
+	return thetaMatrix, nil
+}
+
+//ArtmRequestTransformMasterModelExternal apply model to new data
+func ArtmRequestTransformMasterModelExternal(masterModelID int, conf *TransformMasterModelArgs) (*ThetaMatrix, error) {
+	message, err := proto.Marshal(conf)
+	if err != nil {
+		return nil, fmt.Errorf("Protobuf TransformMasterModelArgs marshaling error: %s", err)
+	}
+	p := unsafe.Pointer(&message[0])
+	messageLength := C.ArtmRequestTransformMasterModelExternal(C.int(masterModelID), C.int64_t(len(message)), (*C.char)(p))
+	err = ArtmGetLastErrorMessage()
+	if err != nil {
+		return nil, err
+	}
+
+	thetaMatrix := &ThetaMatrix{}
+	if err = artmCopyRequestedMessage(messageLength, thetaMatrix); err != nil {
+		return nil, err
+	}
+	return thetaMatrix, nil
 }
