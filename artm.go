@@ -26,6 +26,12 @@ var ARTM_ERRORS = []string{
 	"ARTM_DISK_WRITE_ERROR",
 }
 
+func NewGetThetaMatrixArgs() *GetThetaMatrixArgs {
+	eps := Default_GetThetaMatrixArgs_Eps
+	layout := Default_GetThetaMatrixArgs_MatrixLayout
+	return &GetThetaMatrixArgs{Eps: &eps, MatrixLayout: &layout}
+}
+
 func NewTransformMasterModelArgs() *TransformMasterModelArgs {
 	matrixType := Default_TransformMasterModelArgs_ThetaMatrixType
 	return &TransformMasterModelArgs{ThetaMatrixType: &matrixType}
@@ -194,6 +200,31 @@ func ArtmRequestTopicModel(masterModelID int, config *GetTopicModelArgs) (*Topic
 	return topicModel, nil
 }
 
+//ArtmRequestTopicModelExternal
+func ArtmRequestTopicModelExternal(masterModelID int, config *GetTopicModelArgs) (*TopicModel, error) {
+	message, err := proto.Marshal(config)
+	if err != nil {
+		return nil, fmt.Errorf("Protobuf GetTopicModelArgs marshaling error: %s", err)
+	}
+
+	messageLength := C.ArtmRequestTopicModelExternal(C.int(masterModelID), C.int64_t(len(message)), (*C.char)(unsafe.Pointer(&message[0])))
+	err = ArtmGetLastErrorMessage()
+	if err != nil {
+		return nil, err
+	}
+	if messageLength < 0 {
+		return nil, fmt.Errorf("Get requested data error: %s\n", ARTM_ERRORS[-messageLength])
+	}
+
+	topicModel := &TopicModel{}
+	err = artmCopyRequestedMessage(messageLength, topicModel)
+	if err != nil {
+		return nil, err
+	}
+
+	return topicModel, nil
+}
+
 //ArtmCreateMasterModel create master model
 func ArtmCreateMasterModel(config *MasterModelConfig) (int, error) {
 	message, err := proto.Marshal(config)
@@ -318,6 +349,46 @@ func ArtmRequestTransformMasterModelExternal(masterModelID int, conf *TransformM
 	}
 	p := unsafe.Pointer(&message[0])
 	messageLength := C.ArtmRequestTransformMasterModelExternal(C.int(masterModelID), C.int64_t(len(message)), (*C.char)(p))
+	err = ArtmGetLastErrorMessage()
+	if err != nil {
+		return nil, err
+	}
+
+	thetaMatrix := &ThetaMatrix{}
+	if err = artmCopyRequestedMessage(messageLength, thetaMatrix); err != nil {
+		return nil, err
+	}
+	return thetaMatrix, nil
+}
+
+//ArtmRequestThetaMatrix
+func ArtmRequestThetaMatrix(masterModelID int, conf *GetThetaMatrixArgs) (*ThetaMatrix, error) {
+	message, err := proto.Marshal(conf)
+	if err != nil {
+		return nil, fmt.Errorf("Protobuf GetThetaMatrixArgs marshaling error: %s", err)
+	}
+	p := unsafe.Pointer(&message[0])
+	messageLength := C.ArtmRequestThetaMatrix(C.int(masterModelID), C.int64_t(len(message)), (*C.char)(p))
+	err = ArtmGetLastErrorMessage()
+	if err != nil {
+		return nil, err
+	}
+
+	thetaMatrix := &ThetaMatrix{}
+	if err = artmCopyRequestedMessage(messageLength, thetaMatrix); err != nil {
+		return nil, err
+	}
+	return thetaMatrix, nil
+}
+
+//ArtmRequestThetaMatrixExternal
+func ArtmRequestThetaMatrixExternal(masterModelID int, conf *GetThetaMatrixArgs) (*ThetaMatrix, error) {
+	message, err := proto.Marshal(conf)
+	if err != nil {
+		return nil, fmt.Errorf("Protobuf GetThetaMatrixArgs marshaling error: %s", err)
+	}
+	p := unsafe.Pointer(&message[0])
+	messageLength := C.ArtmRequestThetaMatrixExternal(C.int(masterModelID), C.int64_t(len(message)), (*C.char)(p))
 	err = ArtmGetLastErrorMessage()
 	if err != nil {
 		return nil, err

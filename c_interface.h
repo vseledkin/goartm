@@ -86,11 +86,15 @@ extern "C" {
 
   DLL_PUBLIC int64_t ArtmRequestMasterModelConfig(int master_id);
 
+  //Wrapper available
   DLL_PUBLIC int64_t ArtmRequestThetaMatrix(int master_id, int64_t length, const char* get_theta_args);
+  //Wrapper available
   DLL_PUBLIC int64_t ArtmRequestThetaMatrixExternal(int master_id, int64_t length, const char* get_theta_args);
 
   //Wrapper available
   DLL_PUBLIC int64_t ArtmRequestTopicModel(int master_id, int64_t length, const char* get_model_args);
+
+  //Wrapper available
   DLL_PUBLIC int64_t ArtmRequestTopicModelExternal(int master_id, int64_t length, const char* get_model_args);
 
   //Wrapper available
