@@ -39,16 +39,17 @@ func NewBatchFromData(data [][]string) *Batch {
 	dic := make(map[string]int32)
 	for _, doc := range data {
 		for _, token := range doc {
-			dic[token] = int32(len(dic))
+			_, ok := dic[token]
+			if !ok {
+				dic[token] = int32(len(dic))
+			}
 		}
 	}
 	batch := NewBatch()
 	// fill batch with tokens
 	batch.Token = make([]string, len(dic))
-	var i int
 	for token := range dic {
-		batch.Token[i] = token
-		i++
+		batch.Token[dic[token]] = token
 	}
 	// fill documents
 	for i, doc := range data {
@@ -60,6 +61,7 @@ func NewBatchFromData(data [][]string) *Batch {
 		item := NewItem()
 		item.Id = &id // document id
 		// generate BOW representation
+
 		for token, tf := range localDic {
 			item.TokenId = append(item.TokenId, dic[token])
 			item.TokenWeight = append(item.TokenWeight, tf)

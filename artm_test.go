@@ -439,6 +439,9 @@ func TestPrintTopTopicTokens(t *testing.T) {
 func TestInference(t *testing.T) {
 	// initialize
 	conf := NewMasterModelConfig()
+	var passes int32 = 100
+	conf.NumDocumentPasses = &passes
+
 	modelID, err := ArtmCreateMasterModel(conf)
 	if err != nil {
 		t.Fatal(err)
@@ -508,8 +511,9 @@ func TestInference(t *testing.T) {
 	}
 
 	batch := NewBatchFromData(documents)
+
 	t.Logf("Created batch with uid %s", *batch.Id)
-	t.Logf("Created batchЖ %#v", *batch)
+	t.Logf("Created batch %v", *batch)
 	transformMasterModelArgs := NewTransformMasterModelArgs()
 	transformMasterModelArgs.Batch = []*Batch{batch}
 
