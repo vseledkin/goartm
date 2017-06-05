@@ -102,6 +102,13 @@ func NewGatherDictionaryArgs(name, dataPath, vocabFilePath string) *GatherDictio
 	return gda
 }
 
+func NewFilterDictionaryArgs(name, targetName string, minCount float32) *FilterDictionaryArgs {
+	fda := new(FilterDictionaryArgs)
+	fda.DictionaryName = &name
+	fda.DictionaryTargetName = &targetName
+	fda.MinDf = &minCount
+	return fda
+}
 func ArtmGetLastErrorMessage() error {
 	err := C.ArtmGetLastErrorMessage()
 	//defer C.free(unsafe.Pointer(err)) may not be allocated
@@ -431,7 +438,115 @@ func ArtmGatherDictionary(masterModelID int, conf *GatherDictionaryArgs) error {
 		return fmt.Errorf("Protobuf GatherDictionaryArgs marshaling error: %s", err)
 	}
 	p := unsafe.Pointer(&message[0])
-	C.ArtmGatherDictionary(C.int(masterModelID), C.int64_t(len(message)), (*C.char)(p))
+	errorID := C.ArtmGatherDictionary(C.int(masterModelID), C.int64_t(len(message)), (*C.char)(p))
+	if errorID < 0 {
+		return fmt.Errorf("ArtmGatherDictionary error: %s\n", ARTM_ERRORS[-errorID])
+	}
+	err = ArtmGetLastErrorMessage()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func ArtmFilterDictionary(masterModelID int, conf *FilterDictionaryArgs) error {
+	message, err := proto.Marshal(conf)
+	if err != nil {
+		return fmt.Errorf("Protobuf FilterDictionaryArgs marshaling error: %s", err)
+	}
+	p := unsafe.Pointer(&message[0])
+	errorID := C.ArtmFilterDictionary(C.int(masterModelID), C.int64_t(len(message)), (*C.char)(p))
+	if errorID < 0 {
+		return fmt.Errorf("ArtmFilterDictionary error: %s\n", ARTM_ERRORS[-errorID])
+	}
+	err = ArtmGetLastErrorMessage()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func ArtmExportDictionary(masterModelID int, dictionaryName, fileName string) error {
+	conf := new(ExportDictionaryArgs)
+	conf.DictionaryName = &dictionaryName
+	conf.FileName = &fileName
+	message, err := proto.Marshal(conf)
+	if err != nil {
+		return fmt.Errorf("Protobuf ExportDictionaryArgs marshaling error: %s", err)
+	}
+	p := unsafe.Pointer(&message[0])
+	errorID := C.ArtmExportDictionary(C.int(masterModelID), C.int64_t(len(message)), (*C.char)(p))
+	if errorID < 0 {
+		return fmt.Errorf("ArtmExportDictionary error: %s\n", ARTM_ERRORS[-errorID])
+	}
+	err = ArtmGetLastErrorMessage()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func ArtmFitOfflineMasterModel(masterModelID int, batchFolder string, numCollectionPasses int32) error {
+	conf := new(FitOfflineMasterModelArgs)
+	conf.BatchFolder = &batchFolder
+	conf.NumCollectionPasses = &numCollectionPasses
+
+	message, err := proto.Marshal(conf)
+	if err != nil {
+		return fmt.Errorf("Protobuf FitOfflineMasterModelArgs marshaling error: %s", err)
+	}
+	p := unsafe.Pointer(&message[0])
+	errorID := C.ArtmFitOfflineMasterModel(C.int(masterModelID), C.int64_t(len(message)), (*C.char)(p))
+	if errorID < 0 {
+		return fmt.Errorf("ArtmFitOfflineMasterModel error: %s\n", ARTM_ERRORS[-errorID])
+	}
+	err = ArtmGetLastErrorMessage()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func ArtmExportModel(masterModelID int, fileName, modelName string) error {
+	conf := new(ExportModelArgs)
+	conf.FileName = &fileName
+	conf.ModelName = &modelName
+	message, err := proto.Marshal(conf)
+	if err != nil {
+		return fmt.Errorf("Protobuf ExportModelArgs marshaling error: %s", err)
+	}
+	p := unsafe.Pointer(&message[0])
+	errorID := C.ArtmExportModel(C.int(masterModelID), C.int64_t(len(message)), (*C.char)(p))
+	if errorID < 0 {
+		return fmt.Errorf("ArtmExportModel error: %s\n", ARTM_ERRORS[-errorID])
+	}
+	err = ArtmGetLastErrorMessage()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+//ArtmInitializeModel wrapper
+func ArtmInitializeModel(masterModelID int, modelName, dictionaryName string, numberOfTopics int32) error {
+	conf := new(InitializeModelArgs)
+	conf.ModelName = &modelName
+	conf.DictionaryName = &dictionaryName
+	var i int32
+	conf.TopicName = make([]string, numberOfTopics)
+	for ; i < numberOfTopics; i++ {
+		conf.TopicName[i] = fmt.Sprintf("Topic_%d", i)
+	}
+
+	message, err := proto.Marshal(conf)
+	if err != nil {
+		return fmt.Errorf("Protobuf InitializeModelArgs marshaling error: %s", err)
+	}
+	p := unsafe.Pointer(&message[0])
+	errorID := C.ArtmInitializeModel(C.int(masterModelID), C.int64_t(len(message)), (*C.char)(p))
+	if errorID < 0 {
+		return fmt.Errorf("ArtmInitializeModel error: %s\n", ARTM_ERRORS[-errorID])
+	}
 	err = ArtmGetLastErrorMessage()
 	if err != nil {
 		return err

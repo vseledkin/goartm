@@ -46,6 +46,7 @@ extern "C" {
 
   // Wrapper available
   DLL_PUBLIC int64_t ArtmGatherDictionary(int master_id, int64_t length, const char* gather_dictionary_args);
+  // Wrapper available
   DLL_PUBLIC int64_t ArtmFilterDictionary(int master_id, int64_t length, const char* filter_dictionary_args);
   DLL_PUBLIC int64_t ArtmCreateDictionary(int master_id, int64_t length, const char* dictionary_data);
   DLL_PUBLIC int64_t ArtmCreateDictionaryNamed(int master_id, int64_t length, const char* dictionary_data, const char* name);
@@ -57,7 +58,7 @@ extern "C" {
 
   //Wrapper available
   DLL_PUBLIC int64_t ArtmImportDictionary(int master_id, int64_t length, const char* import_dictionary_args);
-
+  //Wrapper available
   DLL_PUBLIC int64_t ArtmExportDictionary(int master_id, int64_t length, const char* export_dictionary_args);
   DLL_PUBLIC int64_t ArtmParseCollection(int64_t length, const char* collection_parser_config);
 
@@ -67,7 +68,9 @@ extern "C" {
   DLL_PUBLIC int64_t ArtmOverwriteTopicModel(int master_id, int64_t length, const char* topic_model);
   DLL_PUBLIC int64_t ArtmOverwriteTopicModelNamed(int master_id, int64_t length,
                                                   const char* topic_model, const char* name);
+  //Wrapper available
   DLL_PUBLIC int64_t ArtmInitializeModel(int master_id, int64_t length, const char* init_model_args);
+  //Wrapper available
   DLL_PUBLIC int64_t ArtmExportModel(int master_id, int64_t length, const char* export_model_args);
 
   //Wrapper available
@@ -82,6 +85,7 @@ extern "C" {
   DLL_PUBLIC int64_t ArtmRegularizeModel(int master_id, int64_t length, const char* regularize_model_args);
   DLL_PUBLIC int64_t ArtmNormalizeModel(int master_id, int64_t length, const char* normalize_model_args);
 
+  //Wrapper available
   DLL_PUBLIC int64_t ArtmFitOfflineMasterModel(int master_id, int64_t length,
                                                const char* fit_offline_master_model_args);
   DLL_PUBLIC int64_t ArtmFitOnlineMasterModel(int master_id, int64_t length, const char* fit_online_master_model_args);
