@@ -1,6 +1,7 @@
 package goartm
 
 import (
+	"os"
 	"strings"
 	"testing"
 )
@@ -568,4 +569,29 @@ func TestInference(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Logf("Successfully disposed master model with id %d", modelID)
+}
+
+func TestImportBatch(t *testing.T) {
+
+	documents := [][]string{
+		strings.Fields("нейронные сети используются как замена программиста"),
+		strings.Fields("нейронные сети мозга программиста используются как средство создания нейронных сетей для замены программиста"),
+	}
+
+	batch := NewBatchFromData(documents)
+
+	t.Logf("Created batch with uid %s", *batch.Id)
+	t.Logf("Created batch %#v", *batch)
+
+	err := os.MkdirAll("./store_tmp", 0777)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// save batch to disk
+	err = ArtmSaveBatch("./store_tmp", batch)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 }

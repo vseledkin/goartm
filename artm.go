@@ -5,11 +5,9 @@ package goartm
 // #include "c_interface.h"
 import "C"
 import (
-	"fmt"
-
-	"unsafe"
-
 	"crypto/rand"
+	"fmt"
+	"unsafe"
 
 	"github.com/golang/protobuf/proto"
 )
@@ -94,6 +92,16 @@ func NewMasterModelConfig() *MasterModelConfig {
 	return c
 }
 
+func NewGatherDictionaryArgs(name, dataPath, vocabFilePath string) *GatherDictionaryArgs {
+	gda := new(GatherDictionaryArgs)
+	gda.DictionaryTargetName = &name
+	gda.DataPath = &dataPath
+	gda.VocabFilePath = &vocabFilePath
+	symmetricCoocValues := gda.GetSymmetricCoocValues()
+	gda.SymmetricCoocValues = &symmetricCoocValues
+	return gda
+}
+
 func ArtmGetLastErrorMessage() error {
 	err := C.ArtmGetLastErrorMessage()
 	//defer C.free(unsafe.Pointer(err)) may not be allocated
@@ -157,7 +165,7 @@ func ArtmRequestMasterComponentInfo(masterModelID int, config *GetMasterComponen
 		return nil, fmt.Errorf("Protobuf GetMasterComponentInfoArgs marshaling error: %s", err)
 	}
 
-	messageLength := C.ArtmRequestMasterComponentInfo(C.int(masterModelID), C.int64_t(len(message)), (*C.char)(unsafe.Pointer(&message)))
+	messageLength := C.ArtmRequestMasterComponentInfo(C.int(masterModelID), C.int64_t(len(message)), (*C.char)(unsafe.Pointer(&message[0])))
 	err = ArtmGetLastErrorMessage()
 	if err != nil {
 		return nil, err
@@ -399,4 +407,34 @@ func ArtmRequestThetaMatrixExternal(masterModelID int, conf *GetThetaMatrixArgs)
 		return nil, err
 	}
 	return thetaMatrix, nil
+}
+
+//ArtmSaveBatch save batch to disk
+func ArtmSaveBatch(disk_path string, batch *Batch) error {
+	message, err := proto.Marshal(batch)
+	if err != nil {
+		return fmt.Errorf("Protobuf Batch marshaling error: %s", err)
+	}
+
+	C.ArtmSaveBatch((*C.char)(unsafe.Pointer(&[]byte(disk_path)[0])), C.int64_t(len(message)), (*C.char)(unsafe.Pointer(&message[0])))
+
+	err = ArtmGetLastErrorMessage()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func ArtmGatherDictionary(masterModelID int, conf *GatherDictionaryArgs) error {
+	message, err := proto.Marshal(conf)
+	if err != nil {
+		return fmt.Errorf("Protobuf GatherDictionaryArgs marshaling error: %s", err)
+	}
+	p := unsafe.Pointer(&message[0])
+	C.ArtmGatherDictionary(C.int(masterModelID), C.int64_t(len(message)), (*C.char)(p))
+	err = ArtmGetLastErrorMessage()
+	if err != nil {
+		return err
+	}
+	return nil
 }

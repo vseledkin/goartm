@@ -9,7 +9,15 @@
 
 #include <stdint.h>
 
-#define DLL_PUBLIC
+#if defined(WIN32)
+  #ifdef artm_EXPORTS
+    #define DLL_PUBLIC __declspec(dllexport)
+  #else
+    #define DLL_PUBLIC __declspec(dllimport)
+  #endif
+#else
+  #define DLL_PUBLIC
+#endif
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -36,6 +44,7 @@ extern "C" {
   DLL_PUBLIC int64_t ArtmReconfigureRegularizer(int master_id, int64_t length, const char* regularizer_config);
   DLL_PUBLIC int64_t ArtmDisposeRegularizer(int master_id, const char* regularizer_name);
 
+  // Wrapper available
   DLL_PUBLIC int64_t ArtmGatherDictionary(int master_id, int64_t length, const char* gather_dictionary_args);
   DLL_PUBLIC int64_t ArtmFilterDictionary(int master_id, int64_t length, const char* filter_dictionary_args);
   DLL_PUBLIC int64_t ArtmCreateDictionary(int master_id, int64_t length, const char* dictionary_data);
@@ -110,7 +119,7 @@ extern "C" {
   DLL_PUBLIC int64_t ArtmCopyRequestedObject(int64_t length, char* address);
 
   DLL_PUBLIC int64_t ArtmAwaitOperation(int operation_id, int64_t length, const char* await_operation_args);
-
+  //Wrapper available
   DLL_PUBLIC int64_t ArtmSaveBatch(const char* disk_path, int64_t length, const char* batch);
 
   //Wrapper available
