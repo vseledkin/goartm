@@ -63,15 +63,15 @@ func TestArtmRequestDictionary(t *testing.T) {
 	t.Logf("Successfully imported model into %d", modelID)
 	// load dictionary
 
-	importDictionaryArgsConfig := NewImportDictionaryArgs("main_dictionary", "dictionary.dict")
-	err = ArtmImportDictionary(modelID, importDictionaryArgsConfig)
+	dicName := "main_dictionary"
+	err = ArtmImportDictionary(modelID, dicName, "dictionary.dict")
 	if err != nil {
 		t.Fatal(err)
 	}
 	t.Logf("Successfully loaded dictionary into model %d", modelID)
 
 	// get dictionary
-	dictionaryConfig := NewGetDictionaryArgs(*importDictionaryArgsConfig.DictionaryName)
+	dictionaryConfig := NewGetDictionaryArgs(dicName)
 	dic, err := ArtmRequestDictionary(modelID, dictionaryConfig)
 	if err != nil {
 		t.Fatal(err)
@@ -118,15 +118,15 @@ func TestArtmRequestScore(t *testing.T) {
 	t.Logf("Successfully imported model into %d", modelID)
 	// load dictionary
 
-	importDictionaryArgsConfig := NewImportDictionaryArgs("main_dictionary", "dictionary.dict")
-	err = ArtmImportDictionary(modelID, importDictionaryArgsConfig)
+	dicName := "main_dictionary"
+	err = ArtmImportDictionary(modelID, dicName, "dictionary.dict")
 	if err != nil {
 		t.Fatal(err)
 	}
 	t.Logf("Successfully loaded dictionary into model %d", modelID)
 
 	// get dictionary
-	dictionaryConfig := NewGetDictionaryArgs(*importDictionaryArgsConfig.DictionaryName)
+	dictionaryConfig := NewGetDictionaryArgs(dicName)
 	dic, err := ArtmRequestDictionary(modelID, dictionaryConfig)
 	if err != nil {
 		t.Fatal(err)
@@ -144,9 +144,7 @@ func TestArtmRequestScore(t *testing.T) {
 	}
 
 	// request score
-	scoreConfig := NewGetScoreValueArgs("TopTokensScore")
-
-	score, err := ArtmRequestScore(modelID, scoreConfig)
+	score, err := ArtmRequestScore(modelID, "TopTokensScore")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -183,15 +181,15 @@ func TestArtmMasterComponentInfo(t *testing.T) {
 	t.Logf("Successfully imported model into %d", modelID)
 	// load dictionary
 
-	importDictionaryArgsConfig := NewImportDictionaryArgs("main_dictionary", "dictionary.dict")
-	err = ArtmImportDictionary(modelID, importDictionaryArgsConfig)
+	dicName := "main_dictionary"
+	err = ArtmImportDictionary(modelID, dicName, "dictionary.dict")
 	if err != nil {
 		t.Fatal(err)
 	}
 	t.Logf("Successfully loaded dictionary into model %d", modelID)
 
 	// get dictionary
-	dictionaryConfig := NewGetDictionaryArgs(*importDictionaryArgsConfig.DictionaryName)
+	dictionaryConfig := NewGetDictionaryArgs(dicName)
 	dic, err := ArtmRequestDictionary(modelID, dictionaryConfig)
 	if err != nil {
 		t.Fatal(err)
@@ -251,15 +249,15 @@ func TestArtmRequestTopicModel(t *testing.T) {
 	t.Logf("Successfully imported model into %d", modelID)
 	// load dictionary
 
-	importDictionaryArgsConfig := NewImportDictionaryArgs("main_dictionary", "dictionary.dict")
-	err = ArtmImportDictionary(modelID, importDictionaryArgsConfig)
+	dicName := "main_dictionary"
+	err = ArtmImportDictionary(modelID, dicName, "dictionary.dict")
 	if err != nil {
 		t.Fatal(err)
 	}
 	t.Logf("Successfully loaded dictionary into model %d", modelID)
 
 	// get dictionary
-	dictionaryConfig := NewGetDictionaryArgs(*importDictionaryArgsConfig.DictionaryName)
+	dictionaryConfig := NewGetDictionaryArgs(dicName)
 	dic, err := ArtmRequestDictionary(modelID, dictionaryConfig)
 	if err != nil {
 		t.Fatal(err)
@@ -347,15 +345,15 @@ func TestPrintTopTopicTokens(t *testing.T) {
 	t.Logf("Successfully imported model into %d", modelID)
 	// load dictionary
 
-	importDictionaryArgsConfig := NewImportDictionaryArgs("main_dictionary", "dictionary.dict")
-	err = ArtmImportDictionary(modelID, importDictionaryArgsConfig)
+	dicName := "main_dictionary"
+	err = ArtmImportDictionary(modelID, dicName, "dictionary.dict")
 	if err != nil {
 		t.Fatal(err)
 	}
 	t.Logf("Successfully loaded dictionary into model %d", modelID)
 
 	// get dictionary
-	dictionaryConfig := NewGetDictionaryArgs(*importDictionaryArgsConfig.DictionaryName)
+	dictionaryConfig := NewGetDictionaryArgs(dicName)
 	dic, err := ArtmRequestDictionary(modelID, dictionaryConfig)
 	if err != nil {
 		t.Fatal(err)
@@ -457,15 +455,15 @@ func TestInference(t *testing.T) {
 	t.Logf("Successfully imported model into %d", modelID)
 	// load dictionary
 
-	importDictionaryArgsConfig := NewImportDictionaryArgs("main_dictionary", "dictionary.dict")
-	err = ArtmImportDictionary(modelID, importDictionaryArgsConfig)
+	dicName := "main_dictionary"
+	err = ArtmImportDictionary(modelID, dicName, "dictionary.dict")
 	if err != nil {
 		t.Fatal(err)
 	}
 	t.Logf("Successfully loaded dictionary into model %d", modelID)
 
 	// get dictionary
-	dictionaryConfig := NewGetDictionaryArgs(*importDictionaryArgsConfig.DictionaryName)
+	dictionaryConfig := NewGetDictionaryArgs(dicName)
 	dic, err := ArtmRequestDictionary(modelID, dictionaryConfig)
 	if err != nil {
 		t.Fatal(err)

@@ -68,10 +68,6 @@ func NewImportModelArgs(fileName string) *ImportModelArgs {
 	return &ImportModelArgs{FileName: &fileName}
 }
 
-func NewImportDictionaryArgs(dicName, fileName string) *ImportDictionaryArgs {
-	return &ImportDictionaryArgs{FileName: &fileName, DictionaryName: &dicName}
-}
-
 func NewGetScoreValueArgs(scoreName string) *GetScoreValueArgs {
 	return &GetScoreValueArgs{ScoreName: &scoreName}
 }
@@ -141,7 +137,9 @@ func artmCopyRequestedMessage(length C.int64_t, messagePointer proto.Message) er
 }
 
 //ArtmRequestScore create master model
-func ArtmRequestScore(masterModelID int, config *GetScoreValueArgs) (*ScoreData, error) {
+func ArtmRequestScore(masterModelID int, scoreName string) (*ScoreData, error) {
+	config := new(GetScoreValueArgs)
+	config.ScoreName = &scoreName
 	message, err := proto.Marshal(config)
 	if err != nil {
 		return nil, fmt.Errorf("Protobuf GetScoreValueArgs marshaling error: %s", err)
@@ -287,7 +285,11 @@ func ArtmDisposeMasterComponent(masterModelID int) error {
 	return nil
 }
 
-func ArtmImportDictionary(masterModelID int, conf *ImportDictionaryArgs) error {
+func ArtmImportDictionary(masterModelID int, dictionaryName, dictionaryFile string) error {
+	conf := new(ImportDictionaryArgs)
+	conf.DictionaryName = &dictionaryName
+	conf.FileName = &dictionaryFile
+
 	message, err := proto.Marshal(conf)
 	if err != nil {
 		return fmt.Errorf("Protobuf ImportDictionaryArgs marshaling error: %s", err)
