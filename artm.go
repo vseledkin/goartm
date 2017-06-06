@@ -509,6 +509,28 @@ func ArtmFitOfflineMasterModel(masterModelID int, batchFolder string, numCollect
 	return nil
 }
 
+func ArtmFitOnlineMasterModel(masterModelID int, batchFolder string, numCollectionPasses int32) error {
+	conf := new(FitOnlineMasterModelArgs)
+
+	//conf.BatchFolder = &batchFolder
+	//conf.NumCollectionPasses = &numCollectionPasses
+
+	message, err := proto.Marshal(conf)
+	if err != nil {
+		return fmt.Errorf("Protobuf FitOnlineMasterModel marshaling error: %s", err)
+	}
+	p := unsafe.Pointer(&message[0])
+	errorID := C.ArtmFitOfflineMasterModel(C.int(masterModelID), C.int64_t(len(message)), (*C.char)(p))
+	if errorID < 0 {
+		return fmt.Errorf("ArtmFitOnlineMasterModel error: %s\n", ARTM_ERRORS[-errorID])
+	}
+	err = ArtmGetLastErrorMessage()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func ArtmExportModel(masterModelID int, fileName, modelName string) error {
 	conf := new(ExportModelArgs)
 	conf.FileName = &fileName
@@ -530,15 +552,11 @@ func ArtmExportModel(masterModelID int, fileName, modelName string) error {
 }
 
 //ArtmInitializeModel wrapper
-func ArtmInitializeModel(masterModelID int, modelName, dictionaryName string, numberOfTopics int32) error {
+func ArtmInitializeModel(masterModelID int, modelName, dictionaryName string, topics []string) error {
 	conf := new(InitializeModelArgs)
 	conf.ModelName = &modelName
 	conf.DictionaryName = &dictionaryName
-	var i int32
-	conf.TopicName = make([]string, numberOfTopics)
-	for ; i < numberOfTopics; i++ {
-		conf.TopicName[i] = fmt.Sprintf("Topic_%d", i)
-	}
+	conf.TopicName = topics
 
 	message, err := proto.Marshal(conf)
 	if err != nil {
@@ -548,6 +566,25 @@ func ArtmInitializeModel(masterModelID int, modelName, dictionaryName string, nu
 	errorID := C.ArtmInitializeModel(C.int(masterModelID), C.int64_t(len(message)), (*C.char)(p))
 	if errorID < 0 {
 		return fmt.Errorf("ArtmInitializeModel error: %s\n", ARTM_ERRORS[-errorID])
+	}
+	err = ArtmGetLastErrorMessage()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+//ArtmReconfigureMasterModel wrapper
+func ArtmReconfigureMasterModel(masterModelID int, conf *MasterModelConfig) error {
+
+	message, err := proto.Marshal(conf)
+	if err != nil {
+		return fmt.Errorf("Protobuf MasterModelConfig marshaling error: %s", err)
+	}
+	p := unsafe.Pointer(&message[0])
+	errorID := C.ArtmReconfigureMasterModel(C.int(masterModelID), C.int64_t(len(message)), (*C.char)(p))
+	if errorID < 0 {
+		return fmt.Errorf("ArtmReconfigureMasterModel error: %s\n", ARTM_ERRORS[-errorID])
 	}
 	err = ArtmGetLastErrorMessage()
 	if err != nil {

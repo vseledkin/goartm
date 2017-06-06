@@ -26,7 +26,7 @@ extern "C" {
 
   //Wrapper available
   DLL_PUBLIC int64_t ArtmCreateMasterModel(int64_t length, const char* master_model_config);
-
+ //Wrapper available
   DLL_PUBLIC int64_t ArtmReconfigureMasterModel(int master_id, int64_t length, const char* master_model_config);
   DLL_PUBLIC int64_t ArtmReconfigureTopicName(int master_id, int64_t length, const char* master_model_config);
 
@@ -87,7 +87,7 @@ extern "C" {
 
   //Wrapper available
   DLL_PUBLIC int64_t ArtmFitOfflineMasterModel(int master_id, int64_t length,
-                                               const char* fit_offline_master_model_args);
+                                            const char* fit_offline_master_model_args);
   DLL_PUBLIC int64_t ArtmFitOnlineMasterModel(int master_id, int64_t length, const char* fit_online_master_model_args);
 
   //Wrapper available
