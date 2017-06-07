@@ -5,8 +5,8 @@ package goartm
 // #include "c_interface.h"
 import "C"
 import (
-	"crypto/rand"
 	"fmt"
+	"math/rand"
 	"unsafe"
 
 	"github.com/golang/protobuf/proto"
@@ -64,14 +64,6 @@ func NewGetDictionaryArgs(dicName string) *GetDictionaryArgs {
 	return &GetDictionaryArgs{DictionaryName: &dicName}
 }
 
-func NewImportModelArgs(fileName string) *ImportModelArgs {
-	return &ImportModelArgs{FileName: &fileName}
-}
-
-func NewGetScoreValueArgs(scoreName string) *GetScoreValueArgs {
-	return &GetScoreValueArgs{ScoreName: &scoreName}
-}
-
 func NewMasterModelConfig() *MasterModelConfig {
 	c := &MasterModelConfig{}
 	var MasterModelConfig_PwtName string = Default_MasterModelConfig_PwtName
@@ -103,6 +95,7 @@ func NewFilterDictionaryArgs(name, targetName string, minCount float32) *FilterD
 	fda.DictionaryName = &name
 	fda.DictionaryTargetName = &targetName
 	fda.MinDf = &minCount
+
 	return fda
 }
 func ArtmGetLastErrorMessage() error {
@@ -256,7 +249,8 @@ func ArtmCreateMasterModel(config *MasterModelConfig) (int, error) {
 }
 
 //ArtmImportModel loads model from file ie matrices of size |T|*|W| topics/words
-func ArtmImportModel(masterModelID int, config *ImportModelArgs) error {
+func ArtmImportModel(masterModelID int, fileName string) error {
+	config := &ImportModelArgs{FileName: &fileName}
 	message, err := proto.Marshal(config)
 	if err != nil {
 		return fmt.Errorf("Protobuf ImportModelArgs marshaling error: %s", err)
@@ -323,6 +317,23 @@ func ArtmRequestDictionary(masterModelID int, conf *GetDictionaryArgs) (*Diction
 		return nil, err
 	}
 	return dictionaryData, nil
+}
+
+//ArtmRequestLoadBatch
+func ArtmRequestLoadBatch(fileName string) (*Batch, error) {
+	bytesPointer := []byte(fileName)
+	p := unsafe.Pointer(&bytesPointer[0])
+	messageLength := C.ArtmRequestLoadBatch((*C.char)(p))
+	err := ArtmGetLastErrorMessage()
+	if err != nil {
+		return nil, err
+	}
+
+	batch := new(Batch)
+	if err = artmCopyRequestedMessage(messageLength, batch); err != nil {
+		return nil, err
+	}
+	return batch, nil
 }
 
 func ArtmDisposeDictionary(masterModelID int, dictionaryName string) error {
@@ -552,12 +563,17 @@ func ArtmExportModel(masterModelID int, fileName, modelName string) error {
 }
 
 //ArtmInitializeModel wrapper
-func ArtmInitializeModel(masterModelID int, modelName, dictionaryName string, topics []string) error {
+func ArtmInitializeModel(masterModelID int, modelName, dictionaryName string, topics ...[]string) error {
 	conf := new(InitializeModelArgs)
 	conf.ModelName = &modelName
 	conf.DictionaryName = &dictionaryName
-	conf.TopicName = topics
-
+	var allTopics []string
+	for _, t := range topics {
+		allTopics = append(allTopics, t...)
+	}
+	conf.TopicName = allTopics
+	rnd := rand.Int31()
+	conf.Seed = &rnd
 	message, err := proto.Marshal(conf)
 	if err != nil {
 		return fmt.Errorf("Protobuf InitializeModelArgs marshaling error: %s", err)

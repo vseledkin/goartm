@@ -34,7 +34,7 @@ func GetTopTopicTokens(topicID int, tokens []string, tetaMatrix []*FloatArray, n
 	return ret, len(topicWords)
 }
 
-func NewBatchFromData(data [][]string) *Batch {
+func NewBatchFromData(ids []string, title []string, data [][]string) *Batch {
 	// batch.id must be set to a unique GUID in a format of 00000000-0000-0000-0000-000000000000.
 	dic := make(map[string]int32)
 	for _, doc := range data {
@@ -60,6 +60,11 @@ func NewBatchFromData(data [][]string) *Batch {
 		id := int32(i)
 		item := NewItem()
 		item.Id = &id // document id
+		title := title[i]
+		item.Title = &title
+		id_str := ids[i]
+		fieldName := "ID"
+		item.Field = []*Field{&Field{Name: &fieldName, StringValue: &id_str}}
 		// generate BOW representation
 
 		for token, tf := range localDic {

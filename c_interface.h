@@ -63,6 +63,7 @@ extern "C" {
   DLL_PUBLIC int64_t ArtmParseCollection(int64_t length, const char* collection_parser_config);
 
   DLL_PUBLIC int64_t ArtmImportBatches(int master_id, int64_t length, const char* import_batches_args);
+
   DLL_PUBLIC int64_t ArtmDisposeBatch(int master_id, const char* batch_name);
 
   DLL_PUBLIC int64_t ArtmOverwriteTopicModel(int master_id, int64_t length, const char* topic_model);
@@ -118,6 +119,7 @@ extern "C" {
   //Wrapper available
   DLL_PUBLIC int64_t ArtmRequestMasterComponentInfo(int master_id, int64_t length, const char* get_master_info_args);
 
+  //Wrapper available
   DLL_PUBLIC int64_t ArtmRequestLoadBatch(const char* filename);
   DLL_PUBLIC int64_t ArtmCopyRequestedMessage(int64_t length, char* address);
   DLL_PUBLIC int64_t ArtmCopyRequestedObject(int64_t length, char* address);

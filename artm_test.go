@@ -31,8 +31,7 @@ func TestArtmImportModel(t *testing.T) {
 	t.Logf("Successfully created master model with id %d", modelID)
 	// load model
 
-	importModelConfig := NewImportModelArgs("model")
-	err = ArtmImportModel(modelID, importModelConfig)
+	err = ArtmImportModel(modelID, "model")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -55,8 +54,7 @@ func TestArtmRequestDictionary(t *testing.T) {
 	t.Logf("Successfully created master model with id %d", modelID)
 	// load model
 
-	importModelConfig := NewImportModelArgs("model")
-	err = ArtmImportModel(modelID, importModelConfig)
+	err = ArtmImportModel(modelID, "model")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -110,8 +108,8 @@ func TestArtmRequestScore(t *testing.T) {
 	}
 	t.Logf("Successfully created master model with id %d", modelID)
 	// load model
-	importModelConfig := NewImportModelArgs("model")
-	err = ArtmImportModel(modelID, importModelConfig)
+
+	err = ArtmImportModel(modelID, "model")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -173,8 +171,8 @@ func TestArtmMasterComponentInfo(t *testing.T) {
 	}
 	t.Logf("Successfully created master model with id %d", modelID)
 	// load model
-	importModelConfig := NewImportModelArgs("model")
-	err = ArtmImportModel(modelID, importModelConfig)
+
+	err = ArtmImportModel(modelID, "model")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -241,8 +239,8 @@ func TestArtmRequestTopicModel(t *testing.T) {
 	}
 	t.Logf("Successfully created master model with id %d", modelID)
 	// load model
-	importModelConfig := NewImportModelArgs("model")
-	err = ArtmImportModel(modelID, importModelConfig)
+
+	err = ArtmImportModel(modelID, "model")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -337,8 +335,8 @@ func TestPrintTopTopicTokens(t *testing.T) {
 	}
 	t.Logf("Successfully created master model with id %d", modelID)
 	// load model
-	importModelConfig := NewImportModelArgs("model")
-	err = ArtmImportModel(modelID, importModelConfig)
+
+	err = ArtmImportModel(modelID, "model")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -412,7 +410,7 @@ func TestPrintTopTopicTokens(t *testing.T) {
 	teta := topicModel.GetTokenWeights()
 	for i := 0; i < int(topicModel.GetNumTopics()); i++ {
 		top, total := GetTopTopicTokens(i, tokens, teta, 20)
-		t.Logf("Topic %d (%d=%f)\n", i, total, 100*float32(total)/float32(len(tokens)))
+		t.Logf("%d %s (%d=%f)\n", i, topicModel.GetTopicName()[i], total, 100*float32(total)/float32(len(tokens)))
 		for _, tw := range top {
 			t.Logf("\tWord %d [%s] %#v\n", tw.ID, tw.Object, tw.Weight)
 			if i == 10 {
@@ -447,8 +445,8 @@ func TestInference(t *testing.T) {
 	}
 	t.Logf("Successfully created master model with id %d", modelID)
 	// load model
-	importModelConfig := NewImportModelArgs("model")
-	err = ArtmImportModel(modelID, importModelConfig)
+
+	err = ArtmImportModel(modelID, "model")
 	if err != nil {
 		t.Fatal(err)
 	}
