@@ -60,13 +60,9 @@ func NewBatchFromData(ids []string, title []string, data [][]string) *Batch {
 		id := int32(i)
 		item := NewItem()
 		item.Id = &id // document id
-		title := title[i]
+		title := ids[i] + " " + title[i]
 		item.Title = &title
-		id_str := ids[i]
-		fieldName := "ID"
-		item.Field = []*Field{&Field{Name: &fieldName, StringValue: &id_str}}
 		// generate BOW representation
-
 		for token, tf := range localDic {
 			item.TokenId = append(item.TokenId, dic[token])
 			item.TokenWeight = append(item.TokenWeight, tf)
