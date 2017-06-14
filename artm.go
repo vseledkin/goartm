@@ -54,16 +54,6 @@ func NewGetMasterComponentInfoArgs() *GetMasterComponentInfoArgs {
 	return &GetMasterComponentInfoArgs{}
 }
 
-func NewGetTopicModelArgs() *GetTopicModelArgs {
-	eps := Default_GetTopicModelArgs_Eps
-	ml := Default_GetTopicModelArgs_MatrixLayout
-	return &GetTopicModelArgs{Eps: &eps, MatrixLayout: &ml}
-}
-
-func NewGetDictionaryArgs(dicName string) *GetDictionaryArgs {
-	return &GetDictionaryArgs{DictionaryName: &dicName}
-}
-
 func NewMasterModelConfig() *MasterModelConfig {
 	c := &MasterModelConfig{}
 	var MasterModelConfig_PwtName string = Default_MasterModelConfig_PwtName
@@ -90,12 +80,17 @@ func NewGatherDictionaryArgs(name, dataPath, vocabFilePath string) *GatherDictio
 	return gda
 }
 
-func NewFilterDictionaryArgs(name, targetName string, minCount float32) *FilterDictionaryArgs {
+func NewFilterDictionaryArgs(name, targetName string, minCount, maxDfRate float32, max int64) *FilterDictionaryArgs {
 	fda := new(FilterDictionaryArgs)
 	fda.DictionaryName = &name
 	fda.DictionaryTargetName = &targetName
 	fda.MinDf = &minCount
-
+	if max != 0 {
+		fda.MaxDictionarySize = &max
+	}
+	if maxDfRate != 0 {
+		fda.MaxDfRate = &maxDfRate
+	}
 	return fda
 }
 func ArtmGetLastErrorMessage() error {
@@ -182,7 +177,11 @@ func ArtmRequestMasterComponentInfo(masterModelID int, config *GetMasterComponen
 }
 
 //ArtmRequestTopicModel
-func ArtmRequestTopicModel(masterModelID int, config *GetTopicModelArgs) (*TopicModel, error) {
+func ArtmRequestTopicModel(masterModelID int, topicNames []string) (*TopicModel, error) {
+	eps := Default_GetTopicModelArgs_Eps
+	ml := Default_GetTopicModelArgs_MatrixLayout
+	config := &GetTopicModelArgs{Eps: &eps, MatrixLayout: &ml}
+	config.TopicName = topicNames
 	message, err := proto.Marshal(config)
 	if err != nil {
 		return nil, fmt.Errorf("Protobuf GetTopicModelArgs marshaling error: %s", err)
@@ -300,7 +299,8 @@ func ArtmImportDictionary(masterModelID int, dictionaryName, dictionaryFile stri
 }
 
 //ArtmRequestDictionary request dictionary
-func ArtmRequestDictionary(masterModelID int, conf *GetDictionaryArgs) (*DictionaryData, error) {
+func ArtmRequestDictionary(masterModelID int, dicName string) (*DictionaryData, error) {
+	conf := &GetDictionaryArgs{DictionaryName: &dicName}
 	message, err := proto.Marshal(conf)
 	if err != nil {
 		return nil, fmt.Errorf("Protobuf GetDictionaryArgs marshaling error: %s", err)

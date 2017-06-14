@@ -69,8 +69,7 @@ func TestArtmRequestDictionary(t *testing.T) {
 	t.Logf("Successfully loaded dictionary into model %d", modelID)
 
 	// get dictionary
-	dictionaryConfig := NewGetDictionaryArgs(dicName)
-	dic, err := ArtmRequestDictionary(modelID, dictionaryConfig)
+	dic, err := ArtmRequestDictionary(modelID, dicName)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -86,11 +85,11 @@ func TestArtmRequestDictionary(t *testing.T) {
 		}
 	}
 	// dispose dictionary
-	err = ArtmDisposeDictionary(modelID, *dictionaryConfig.DictionaryName)
+	err = ArtmDisposeDictionary(modelID, dicName)
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Logf("Successfully disposed model %d dictionary %s", modelID, *dictionaryConfig.DictionaryName)
+	t.Logf("Successfully disposed model %d dictionary %s", modelID, dicName)
 	// dospose
 	err = ArtmDisposeMasterComponent(modelID)
 	if err != nil {
@@ -124,8 +123,7 @@ func TestArtmRequestScore(t *testing.T) {
 	t.Logf("Successfully loaded dictionary into model %d", modelID)
 
 	// get dictionary
-	dictionaryConfig := NewGetDictionaryArgs(dicName)
-	dic, err := ArtmRequestDictionary(modelID, dictionaryConfig)
+	dic, err := ArtmRequestDictionary(modelID, dicName)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -149,11 +147,11 @@ func TestArtmRequestScore(t *testing.T) {
 
 	t.Logf("Successfully got score %s of model with id %d", score.GetName(), modelID)
 	// dispose dictionary
-	err = ArtmDisposeDictionary(modelID, *dictionaryConfig.DictionaryName)
+	err = ArtmDisposeDictionary(modelID, dicName)
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Logf("Successfully disposed model %d dictionary %s", modelID, *dictionaryConfig.DictionaryName)
+	t.Logf("Successfully disposed model %d dictionary %s", modelID, dicName)
 	// dospose
 	err = ArtmDisposeMasterComponent(modelID)
 	if err != nil {
@@ -187,8 +185,7 @@ func TestArtmMasterComponentInfo(t *testing.T) {
 	t.Logf("Successfully loaded dictionary into model %d", modelID)
 
 	// get dictionary
-	dictionaryConfig := NewGetDictionaryArgs(dicName)
-	dic, err := ArtmRequestDictionary(modelID, dictionaryConfig)
+	dic, err := ArtmRequestDictionary(modelID, dicName)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -217,11 +214,11 @@ func TestArtmMasterComponentInfo(t *testing.T) {
 	t.Logf("Successfully got MasterComponentInfo of model %d:-> model [%s]", modelID, info.GetModel())
 
 	// dispose dictionary
-	err = ArtmDisposeDictionary(modelID, *dictionaryConfig.DictionaryName)
+	err = ArtmDisposeDictionary(modelID, dicName)
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Logf("Successfully disposed model %d dictionary %s", modelID, *dictionaryConfig.DictionaryName)
+	t.Logf("Successfully disposed model %d dictionary %s", modelID, dicName)
 	// dospose
 	err = ArtmDisposeMasterComponent(modelID)
 	if err != nil {
@@ -255,8 +252,7 @@ func TestArtmRequestTopicModel(t *testing.T) {
 	t.Logf("Successfully loaded dictionary into model %d", modelID)
 
 	// get dictionary
-	dictionaryConfig := NewGetDictionaryArgs(dicName)
-	dic, err := ArtmRequestDictionary(modelID, dictionaryConfig)
+	dic, err := ArtmRequestDictionary(modelID, dicName)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -273,9 +269,8 @@ func TestArtmRequestTopicModel(t *testing.T) {
 	}
 
 	// request score
-	getTopicModelArgs := NewGetTopicModelArgs()
 
-	topicModel, err := ArtmRequestTopicModel(modelID, getTopicModelArgs)
+	topicModel, err := ArtmRequestTopicModel(modelID, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -313,11 +308,11 @@ func TestArtmRequestTopicModel(t *testing.T) {
 	}
 
 	// dispose dictionary
-	err = ArtmDisposeDictionary(modelID, *dictionaryConfig.DictionaryName)
+	err = ArtmDisposeDictionary(modelID, dicName)
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Logf("Successfully disposed model %d dictionary %s", modelID, *dictionaryConfig.DictionaryName)
+	t.Logf("Successfully disposed model %d dictionary %s", modelID, dicName)
 	// dospose
 	err = ArtmDisposeMasterComponent(modelID)
 	if err != nil {
@@ -351,8 +346,7 @@ func TestPrintTopTopicTokens(t *testing.T) {
 	t.Logf("Successfully loaded dictionary into model %d", modelID)
 
 	// get dictionary
-	dictionaryConfig := NewGetDictionaryArgs(dicName)
-	dic, err := ArtmRequestDictionary(modelID, dictionaryConfig)
+	dic, err := ArtmRequestDictionary(modelID, dicName)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -369,9 +363,7 @@ func TestPrintTopTopicTokens(t *testing.T) {
 	}
 
 	// request score
-	getTopicModelArgs := NewGetTopicModelArgs()
-
-	topicModel, err := ArtmRequestTopicModel(modelID, getTopicModelArgs)
+	topicModel, err := ArtmRequestTopicModel(modelID, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -409,22 +401,19 @@ func TestPrintTopTopicTokens(t *testing.T) {
 	}
 	teta := topicModel.GetTokenWeights()
 	for i := 0; i < int(topicModel.GetNumTopics()); i++ {
-		top, total := GetTopTopicTokens(i, tokens, teta, 20)
-		t.Logf("%d %s (%d=%f)\n", i, topicModel.GetTopicName()[i], total, 100*float32(total)/float32(len(tokens)))
+		top, total := GetTopTopicTokens(i, tokens, teta, 10)
+		t.Logf("%d %s (%d=%f)", i, topicModel.GetTopicName()[i], total, 100*float32(total)/float32(len(tokens)))
 		for _, tw := range top {
 			t.Logf("\tWord %d [%s] %#v\n", tw.ID, tw.Object, tw.Weight)
-			if i == 10 {
-				break
-			}
 		}
 	}
 
 	// dispose dictionary
-	err = ArtmDisposeDictionary(modelID, *dictionaryConfig.DictionaryName)
+	err = ArtmDisposeDictionary(modelID, dicName)
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Logf("Successfully disposed model %d dictionary %s", modelID, *dictionaryConfig.DictionaryName)
+	t.Logf("Successfully disposed model %d dictionary %s", modelID, dicName)
 	// dospose
 	err = ArtmDisposeMasterComponent(modelID)
 	if err != nil {
@@ -461,8 +450,7 @@ func TestInference(t *testing.T) {
 	t.Logf("Successfully loaded dictionary into model %d", modelID)
 
 	// get dictionary
-	dictionaryConfig := NewGetDictionaryArgs(dicName)
-	dic, err := ArtmRequestDictionary(modelID, dictionaryConfig)
+	dic, err := ArtmRequestDictionary(modelID, dicName)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -478,10 +466,7 @@ func TestInference(t *testing.T) {
 		}
 	}
 
-	// request score
-	getTopicModelArgs := NewGetTopicModelArgs()
-
-	topicModel, err := ArtmRequestTopicModel(modelID, getTopicModelArgs)
+	topicModel, err := ArtmRequestTopicModel(modelID, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -507,7 +492,7 @@ func TestInference(t *testing.T) {
 		strings.Fields("нейронные сети мозга программиста используются как средство создания нейронных сетей для замены программиста"),
 	}
 
-	batch := NewBatchFromData(documents)
+	batch := NewBatchFromData([]string{}, []string{}, documents)
 
 	t.Logf("Created batch with uid %s", *batch.Id)
 	t.Logf("Created batch %v", *batch)
@@ -554,11 +539,11 @@ func TestInference(t *testing.T) {
 		}
 	*/
 	// dispose dictionary
-	err = ArtmDisposeDictionary(modelID, *dictionaryConfig.DictionaryName)
+	err = ArtmDisposeDictionary(modelID, dicName)
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Logf("Successfully disposed model %d dictionary %s", modelID, *dictionaryConfig.DictionaryName)
+	t.Logf("Successfully disposed model %d dictionary %s", modelID, dicName)
 	// dospose
 	err = ArtmDisposeMasterComponent(modelID)
 	if err != nil {
@@ -574,7 +559,7 @@ func TestImportBatch(t *testing.T) {
 		strings.Fields("нейронные сети мозга программиста используются как средство создания нейронных сетей для замены программиста"),
 	}
 
-	batch := NewBatchFromData(documents)
+	batch := NewBatchFromData([]string{}, []string{}, documents)
 
 	t.Logf("Created batch with uid %s", *batch.Id)
 	t.Logf("Created batch %#v", *batch)

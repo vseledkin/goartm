@@ -1,6 +1,7 @@
 package goartm
 
 import "sort"
+//import "fmt"
 
 type WeightedObject struct {
 	Weight float32
@@ -18,7 +19,9 @@ func GetTopTopicTokens(topicID int, tokens []string, tetaMatrix []*FloatArray, n
 	var topicWords WeightedObjects
 	for i, tokenWeight := range tetaMatrix {
 		value := tokenWeight.GetValue()[topicID]
+
 		if value > 0 {
+			//fmt.Printf("-._%f\n", value)
 			wo := WeightedObject{ID: i, Weight: value}
 			topicWords = append(topicWords, wo)
 		}
