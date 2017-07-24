@@ -469,7 +469,9 @@ func ArtmSaveBatch(disk_path string, batch *Batch) error {
 	}
 
 	p_message := C.CString(string(message))
-	C.ArtmSaveBatch((*C.char)(unsafe.Pointer(&[]byte(disk_path)[0])), C.int64_t(len(message)), p_message)
+	p_diskPath := C.CString(disk_path)
+	C.ArtmSaveBatch(p_diskPath, C.int64_t(len(message)), p_message)
+	C.free(unsafe.Pointer(p_diskPath))
 	C.free(unsafe.Pointer(p_message))
 
 	err = ArtmGetLastErrorMessage()
