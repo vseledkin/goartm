@@ -64,6 +64,8 @@ extern "C" {
 
   DLL_PUBLIC int64_t ArtmImportBatches(int master_id, int64_t length, const char* import_batches_args);
 
+
+  //Wrapper available
   DLL_PUBLIC int64_t ArtmDisposeBatch(int master_id, const char* batch_name);
 
   DLL_PUBLIC int64_t ArtmOverwriteTopicModel(int master_id, int64_t length, const char* topic_model);

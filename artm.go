@@ -95,10 +95,10 @@ func NewFilterDictionaryArgs(name, targetName string, minCount, maxDfRate float3
 }
 func ArtmGetLastErrorMessage() error {
 	err := C.ArtmGetLastErrorMessage()
-	//defer C.free(unsafe.Pointer(err)) may not be allocated
+
 	errorStr := C.GoString(err)
 	if len(errorStr) > 0 {
-		//C.free(unsafe.Pointer(err))
+		//C.free(err) ???? should we dispose error string allocated within library
 		return fmt.Errorf("%s", errorStr)
 	}
 	return nil
@@ -108,6 +108,7 @@ func artmCopyRequestedMessage(length C.int64_t, messagePointer proto.Message) er
 	// allocate memory for message being filled
 	buffer := make([]byte, length)
 	// fill memory with message data
+
 	errorID := C.ArtmCopyRequestedMessage(length, (*C.char)(unsafe.Pointer(&buffer[0])))
 	// check errors
 	if errorID < 0 {
@@ -132,8 +133,9 @@ func ArtmRequestScore(masterModelID int, scoreName string) (*ScoreData, error) {
 	if err != nil {
 		return nil, fmt.Errorf("Protobuf GetScoreValueArgs marshaling error: %s", err)
 	}
-
-	messageLength := C.ArtmRequestScore(C.int(masterModelID), C.int64_t(len(message)), (*C.char)(unsafe.Pointer(&message[0])))
+	p_message := C.CString(string(message))
+	messageLength := C.ArtmRequestScore(C.int(masterModelID), C.int64_t(len(message)), p_message)
+	C.free(unsafe.Pointer(p_message))
 	err = ArtmGetLastErrorMessage()
 	if err != nil {
 		return nil, err
@@ -157,8 +159,9 @@ func ArtmRequestMasterComponentInfo(masterModelID int, config *GetMasterComponen
 	if err != nil {
 		return nil, fmt.Errorf("Protobuf GetMasterComponentInfoArgs marshaling error: %s", err)
 	}
-
-	messageLength := C.ArtmRequestMasterComponentInfo(C.int(masterModelID), C.int64_t(len(message)), (*C.char)(unsafe.Pointer(&message[0])))
+	p_message := C.CString(string(message))
+	messageLength := C.ArtmRequestMasterComponentInfo(C.int(masterModelID), C.int64_t(len(message)), p_message)
+	C.free(unsafe.Pointer(p_message))
 	err = ArtmGetLastErrorMessage()
 	if err != nil {
 		return nil, err
@@ -186,8 +189,9 @@ func ArtmRequestTopicModel(masterModelID int, topicNames []string) (*TopicModel,
 	if err != nil {
 		return nil, fmt.Errorf("Protobuf GetTopicModelArgs marshaling error: %s", err)
 	}
-
-	messageLength := C.ArtmRequestTopicModel(C.int(masterModelID), C.int64_t(len(message)), (*C.char)(unsafe.Pointer(&message[0])))
+	p_message := C.CString(string(message))
+	messageLength := C.ArtmRequestTopicModel(C.int(masterModelID), C.int64_t(len(message)), p_message)
+	C.free(unsafe.Pointer(p_message))
 	err = ArtmGetLastErrorMessage()
 	if err != nil {
 		return nil, err
@@ -211,8 +215,9 @@ func ArtmRequestTopicModelExternal(masterModelID int, config *GetTopicModelArgs)
 	if err != nil {
 		return nil, fmt.Errorf("Protobuf GetTopicModelArgs marshaling error: %s", err)
 	}
-
-	messageLength := C.ArtmRequestTopicModelExternal(C.int(masterModelID), C.int64_t(len(message)), (*C.char)(unsafe.Pointer(&message[0])))
+	p_message := C.CString(string(message))
+	messageLength := C.ArtmRequestTopicModelExternal(C.int(masterModelID), C.int64_t(len(message)), p_message)
+	C.free(unsafe.Pointer(p_message))
 	err = ArtmGetLastErrorMessage()
 	if err != nil {
 		return nil, err
@@ -236,7 +241,9 @@ func ArtmCreateMasterModel(config *MasterModelConfig) (int, error) {
 	if err != nil {
 		return 0, fmt.Errorf("Protobuf MasterModelConfig marshaling error: %s", err)
 	}
-	masterID := C.int(C.ArtmCreateMasterModel(C.int64_t(len(message)), (*C.char)(unsafe.Pointer(&message[0]))))
+	p_message := C.CString(string(message))
+	masterID := C.int(C.ArtmCreateMasterModel(C.int64_t(len(message)), p_message))
+	C.free(unsafe.Pointer(p_message))
 	if masterID < 0 {
 		return 0, fmt.Errorf("Create Master error: %s", ARTM_ERRORS[-masterID])
 	}
@@ -254,7 +261,9 @@ func ArtmImportModel(masterModelID int, fileName string) error {
 	if err != nil {
 		return fmt.Errorf("Protobuf ImportModelArgs marshaling error: %s", err)
 	}
-	errorID := C.ArtmImportModel(C.int(masterModelID), C.int64_t(len(message)), (*C.char)(unsafe.Pointer(&message[0])))
+	p_message := C.CString(string(message))
+	errorID := C.ArtmImportModel(C.int(masterModelID), C.int64_t(len(message)), p_message)
+	C.free(unsafe.Pointer(p_message))
 	if errorID < 0 {
 		fmt.Printf("Load model error: %s\n", ARTM_ERRORS[-errorID])
 	}
@@ -278,6 +287,20 @@ func ArtmDisposeMasterComponent(masterModelID int) error {
 	return nil
 }
 
+func ArtmDisposeBatch(masterModelID int, batchName string) error {
+	p_batchName := C.CString(batchName)
+	errorID := C.ArtmDisposeBatch(C.int(masterModelID), p_batchName)
+	C.free(unsafe.Pointer(p_batchName))
+	if errorID < 0 {
+		fmt.Errorf("Dispose batch error %s\n", ARTM_ERRORS[-errorID])
+	}
+	err := ArtmGetLastErrorMessage()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func ArtmImportDictionary(masterModelID int, dictionaryName, dictionaryFile string) error {
 	conf := new(ImportDictionaryArgs)
 	conf.DictionaryName = &dictionaryName
@@ -287,7 +310,9 @@ func ArtmImportDictionary(masterModelID int, dictionaryName, dictionaryFile stri
 	if err != nil {
 		return fmt.Errorf("Protobuf ImportDictionaryArgs marshaling error: %s", err)
 	}
-	errorID := C.ArtmImportDictionary(C.int(masterModelID), C.int64_t(len(message)), (*C.char)(unsafe.Pointer(&message[0])))
+	p_message := C.CString(string(message))
+	errorID := C.ArtmImportDictionary(C.int(masterModelID), C.int64_t(len(message)), p_message)
+	C.free(unsafe.Pointer(p_message))
 	if errorID < 0 {
 		fmt.Printf("Load dictionary error: %s\n", ARTM_ERRORS[-errorID])
 	}
@@ -305,8 +330,9 @@ func ArtmRequestDictionary(masterModelID int, dicName string) (*DictionaryData, 
 	if err != nil {
 		return nil, fmt.Errorf("Protobuf GetDictionaryArgs marshaling error: %s", err)
 	}
-	p := unsafe.Pointer(&message[0])
-	messageLength := C.ArtmRequestDictionary(C.int(masterModelID), C.int64_t(len(message)), (*C.char)(p))
+	p_message := C.CString(string(message))
+	messageLength := C.ArtmRequestDictionary(C.int(masterModelID), C.int64_t(len(message)), p_message)
+	C.free(unsafe.Pointer(p_message))
 	err = ArtmGetLastErrorMessage()
 	if err != nil {
 		return nil, err
@@ -321,14 +347,13 @@ func ArtmRequestDictionary(masterModelID int, dicName string) (*DictionaryData, 
 
 //ArtmRequestLoadBatch
 func ArtmRequestLoadBatch(fileName string) (*Batch, error) {
-	bytesPointer := []byte(fileName)
-	p := unsafe.Pointer(&bytesPointer[0])
-	messageLength := C.ArtmRequestLoadBatch((*C.char)(p))
+	p_fileName := C.CString(fileName)
+	messageLength := C.ArtmRequestLoadBatch(p_fileName)
+	C.free(unsafe.Pointer(p_fileName))
 	err := ArtmGetLastErrorMessage()
 	if err != nil {
 		return nil, err
 	}
-
 	batch := new(Batch)
 	if err = artmCopyRequestedMessage(messageLength, batch); err != nil {
 		return nil, err
@@ -337,8 +362,9 @@ func ArtmRequestLoadBatch(fileName string) (*Batch, error) {
 }
 
 func ArtmDisposeDictionary(masterModelID int, dictionaryName string) error {
-	bytesPointer := []byte(dictionaryName)
-	errorID := C.ArtmDisposeDictionary(C.int(masterModelID), (*C.char)(unsafe.Pointer(&bytesPointer[0])))
+	p_dictionaryName := C.CString(dictionaryName)
+	errorID := C.ArtmDisposeDictionary(C.int(masterModelID), p_dictionaryName)
+	C.free(unsafe.Pointer(p_dictionaryName))
 	if errorID < 0 {
 		return fmt.Errorf("Dictionary dispose error: %s\n", ARTM_ERRORS[-errorID])
 	}
@@ -355,8 +381,9 @@ func ArtmRequestTransformMasterModel(masterModelID int, conf *TransformMasterMod
 	if err != nil {
 		return nil, fmt.Errorf("Protobuf TransformMasterModelArgs marshaling error: %s", err)
 	}
-	p := unsafe.Pointer(&message[0])
-	messageLength := C.ArtmRequestTransformMasterModel(C.int(masterModelID), C.int64_t(len(message)), (*C.char)(p))
+	p_message := C.CString(string(message))
+	messageLength := C.ArtmRequestTransformMasterModel(C.int(masterModelID), C.int64_t(len(message)), p_message)
+	C.free(unsafe.Pointer(p_message))
 	err = ArtmGetLastErrorMessage()
 	if err != nil {
 		return nil, err
@@ -375,8 +402,9 @@ func ArtmRequestTransformMasterModelExternal(masterModelID int, conf *TransformM
 	if err != nil {
 		return nil, fmt.Errorf("Protobuf TransformMasterModelArgs marshaling error: %s", err)
 	}
-	p := unsafe.Pointer(&message[0])
-	messageLength := C.ArtmRequestTransformMasterModelExternal(C.int(masterModelID), C.int64_t(len(message)), (*C.char)(p))
+	p_message := C.CString(string(message))
+	messageLength := C.ArtmRequestTransformMasterModelExternal(C.int(masterModelID), C.int64_t(len(message)), p_message)
+	C.free(unsafe.Pointer(p_message))
 	err = ArtmGetLastErrorMessage()
 	if err != nil {
 		return nil, err
@@ -395,8 +423,10 @@ func ArtmRequestThetaMatrix(masterModelID int, conf *GetThetaMatrixArgs) (*Theta
 	if err != nil {
 		return nil, fmt.Errorf("Protobuf GetThetaMatrixArgs marshaling error: %s", err)
 	}
-	p := unsafe.Pointer(&message[0])
-	messageLength := C.ArtmRequestThetaMatrix(C.int(masterModelID), C.int64_t(len(message)), (*C.char)(p))
+
+	p_message := C.CString(string(message))
+	messageLength := C.ArtmRequestThetaMatrix(C.int(masterModelID), C.int64_t(len(message)), p_message)
+	C.free(unsafe.Pointer(p_message))
 	err = ArtmGetLastErrorMessage()
 	if err != nil {
 		return nil, err
@@ -415,8 +445,10 @@ func ArtmRequestThetaMatrixExternal(masterModelID int, conf *GetThetaMatrixArgs)
 	if err != nil {
 		return nil, fmt.Errorf("Protobuf GetThetaMatrixArgs marshaling error: %s", err)
 	}
-	p := unsafe.Pointer(&message[0])
-	messageLength := C.ArtmRequestThetaMatrixExternal(C.int(masterModelID), C.int64_t(len(message)), (*C.char)(p))
+
+	p_message := C.CString(string(message))
+	messageLength := C.ArtmRequestThetaMatrixExternal(C.int(masterModelID), C.int64_t(len(message)), p_message)
+	C.free(unsafe.Pointer(p_message))
 	err = ArtmGetLastErrorMessage()
 	if err != nil {
 		return nil, err
@@ -436,7 +468,9 @@ func ArtmSaveBatch(disk_path string, batch *Batch) error {
 		return fmt.Errorf("Protobuf Batch marshaling error: %s", err)
 	}
 
-	C.ArtmSaveBatch((*C.char)(unsafe.Pointer(&[]byte(disk_path)[0])), C.int64_t(len(message)), (*C.char)(unsafe.Pointer(&message[0])))
+	p_message := C.CString(string(message))
+	C.ArtmSaveBatch((*C.char)(unsafe.Pointer(&[]byte(disk_path)[0])), C.int64_t(len(message)), p_message)
+	C.free(unsafe.Pointer(p_message))
 
 	err = ArtmGetLastErrorMessage()
 	if err != nil {
@@ -450,8 +484,10 @@ func ArtmGatherDictionary(masterModelID int, conf *GatherDictionaryArgs) error {
 	if err != nil {
 		return fmt.Errorf("Protobuf GatherDictionaryArgs marshaling error: %s", err)
 	}
-	p := unsafe.Pointer(&message[0])
-	errorID := C.ArtmGatherDictionary(C.int(masterModelID), C.int64_t(len(message)), (*C.char)(p))
+	p_message := C.CString(string(message))
+	errorID := C.ArtmGatherDictionary(C.int(masterModelID), C.int64_t(len(message)), p_message)
+	C.free(unsafe.Pointer(p_message))
+
 	if errorID < 0 {
 		return fmt.Errorf("ArtmGatherDictionary error: %s\n", ARTM_ERRORS[-errorID])
 	}
@@ -467,8 +503,10 @@ func ArtmFilterDictionary(masterModelID int, conf *FilterDictionaryArgs) error {
 	if err != nil {
 		return fmt.Errorf("Protobuf FilterDictionaryArgs marshaling error: %s", err)
 	}
-	p := unsafe.Pointer(&message[0])
-	errorID := C.ArtmFilterDictionary(C.int(masterModelID), C.int64_t(len(message)), (*C.char)(p))
+
+	p_message := C.CString(string(message))
+	errorID := C.ArtmFilterDictionary(C.int(masterModelID), C.int64_t(len(message)), p_message)
+	C.free(unsafe.Pointer(p_message))
 	if errorID < 0 {
 		return fmt.Errorf("ArtmFilterDictionary error: %s\n", ARTM_ERRORS[-errorID])
 	}
@@ -487,8 +525,11 @@ func ArtmExportDictionary(masterModelID int, dictionaryName, fileName string) er
 	if err != nil {
 		return fmt.Errorf("Protobuf ExportDictionaryArgs marshaling error: %s", err)
 	}
-	p := unsafe.Pointer(&message[0])
-	errorID := C.ArtmExportDictionary(C.int(masterModelID), C.int64_t(len(message)), (*C.char)(p))
+
+	p_message := C.CString(string(message))
+	errorID := C.ArtmExportDictionary(C.int(masterModelID), C.int64_t(len(message)), p_message)
+	C.free(unsafe.Pointer(p_message))
+
 	if errorID < 0 {
 		return fmt.Errorf("ArtmExportDictionary error: %s\n", ARTM_ERRORS[-errorID])
 	}
@@ -508,8 +549,10 @@ func ArtmFitOfflineMasterModel(masterModelID int, batchFolder string, numCollect
 	if err != nil {
 		return fmt.Errorf("Protobuf FitOfflineMasterModelArgs marshaling error: %s", err)
 	}
-	p := unsafe.Pointer(&message[0])
-	errorID := C.ArtmFitOfflineMasterModel(C.int(masterModelID), C.int64_t(len(message)), (*C.char)(p))
+
+	p_message := C.CString(string(message))
+	errorID := C.ArtmFitOfflineMasterModel(C.int(masterModelID), C.int64_t(len(message)), p_message)
+	C.free(unsafe.Pointer(p_message))
 	if errorID < 0 {
 		return fmt.Errorf("ArtmFitOfflineMasterModel error: %s\n", ARTM_ERRORS[-errorID])
 	}
@@ -530,8 +573,9 @@ func ArtmFitOnlineMasterModel(masterModelID int, batchFolder string, numCollecti
 	if err != nil {
 		return fmt.Errorf("Protobuf FitOnlineMasterModel marshaling error: %s", err)
 	}
-	p := unsafe.Pointer(&message[0])
-	errorID := C.ArtmFitOfflineMasterModel(C.int(masterModelID), C.int64_t(len(message)), (*C.char)(p))
+	p_message := C.CString(string(message))
+	errorID := C.ArtmFitOfflineMasterModel(C.int(masterModelID), C.int64_t(len(message)), p_message)
+	C.free(unsafe.Pointer(p_message))
 	if errorID < 0 {
 		return fmt.Errorf("ArtmFitOnlineMasterModel error: %s\n", ARTM_ERRORS[-errorID])
 	}
@@ -550,8 +594,9 @@ func ArtmExportModel(masterModelID int, fileName, modelName string) error {
 	if err != nil {
 		return fmt.Errorf("Protobuf ExportModelArgs marshaling error: %s", err)
 	}
-	p := unsafe.Pointer(&message[0])
-	errorID := C.ArtmExportModel(C.int(masterModelID), C.int64_t(len(message)), (*C.char)(p))
+	p_message := C.CString(string(message))
+	errorID := C.ArtmExportModel(C.int(masterModelID), C.int64_t(len(message)), p_message)
+	C.free(unsafe.Pointer(p_message))
 	if errorID < 0 {
 		return fmt.Errorf("ArtmExportModel error: %s\n", ARTM_ERRORS[-errorID])
 	}
@@ -578,8 +623,9 @@ func ArtmInitializeModel(masterModelID int, modelName, dictionaryName string, to
 	if err != nil {
 		return fmt.Errorf("Protobuf InitializeModelArgs marshaling error: %s", err)
 	}
-	p := unsafe.Pointer(&message[0])
-	errorID := C.ArtmInitializeModel(C.int(masterModelID), C.int64_t(len(message)), (*C.char)(p))
+	p_message := C.CString(string(message))
+	errorID := C.ArtmInitializeModel(C.int(masterModelID), C.int64_t(len(message)), p_message)
+	C.free(unsafe.Pointer(p_message))
 	if errorID < 0 {
 		return fmt.Errorf("ArtmInitializeModel error: %s\n", ARTM_ERRORS[-errorID])
 	}
@@ -597,8 +643,9 @@ func ArtmReconfigureMasterModel(masterModelID int, conf *MasterModelConfig) erro
 	if err != nil {
 		return fmt.Errorf("Protobuf MasterModelConfig marshaling error: %s", err)
 	}
-	p := unsafe.Pointer(&message[0])
-	errorID := C.ArtmReconfigureMasterModel(C.int(masterModelID), C.int64_t(len(message)), (*C.char)(p))
+	p_message := C.CString(string(message))
+	errorID := C.ArtmReconfigureMasterModel(C.int(masterModelID), C.int64_t(len(message)), p_message)
+	C.free(unsafe.Pointer(p_message))
 	if errorID < 0 {
 		return fmt.Errorf("ArtmReconfigureMasterModel error: %s\n", ARTM_ERRORS[-errorID])
 	}

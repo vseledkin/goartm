@@ -1,6 +1,7 @@
 package goartm
 
 import "sort"
+
 //import "fmt"
 
 type WeightedObject struct {
@@ -26,15 +27,21 @@ func GetTopTopicTokens(topicID int, tokens []string, tetaMatrix []*FloatArray, n
 			topicWords = append(topicWords, wo)
 		}
 	}
+	var ret WeightedObjects
+	if len(topicWords) > 0 {
+		sort.Sort(topicWords)
+		if len(topicWords) < n {
+			n = len(topicWords)
+		}
+		ret = make(WeightedObjects, n)
 
-	sort.Sort(topicWords)
-
-	ret := make(WeightedObjects, n)
-	for i, tw := range topicWords[:n] {
-		ret[i] = tw
-		ret[i].Object = tokens[tw.ID]
+		for i, tw := range topicWords[:n] {
+			ret[i] = tw
+			ret[i].Object = tokens[tw.ID]
+		}
+		return ret, len(topicWords)
 	}
-	return ret, len(topicWords)
+	return WeightedObjects{}, 0
 }
 
 func NewBatchFromData(ids []string, title []string, data [][]string) *Batch {
