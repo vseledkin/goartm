@@ -1,6 +1,7 @@
 package goartm
 
-// #cgo LDFLAGS: libartm.dylib
+// #cgo darwin LDFLAGS: libartm.dylib
+// #cgo linux LDFLAGS: libartm.so
 // #include <stdlib.h>
 // #include "c_interface.h"
 import "C"
@@ -11,6 +12,9 @@ import (
 
 	"github.com/golang/protobuf/proto"
 )
+
+var TRUE = true
+var FALSE = false
 
 var ARTM_ERRORS = []string{
 	"ARTM_SUCCESS",
@@ -181,10 +185,11 @@ func ArtmRequestMasterComponentInfo(masterModelID int, config *GetMasterComponen
 
 //ArtmRequestTopicModel
 func ArtmRequestTopicModel(masterModelID int, topicNames []string) (*TopicModel, error) {
-	eps := Default_GetTopicModelArgs_Eps
+	eps := float32(1e-8)
 	ml := Default_GetTopicModelArgs_MatrixLayout
 	config := &GetTopicModelArgs{Eps: &eps, MatrixLayout: &ml}
 	config.TopicName = topicNames
+	config.UseSparseFormat = &TRUE
 	message, err := proto.Marshal(config)
 	if err != nil {
 		return nil, fmt.Errorf("Protobuf GetTopicModelArgs marshaling error: %s", err)

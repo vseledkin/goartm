@@ -16,15 +16,15 @@ func (s WeightedObjects) Len() int           { return len(s) }
 func (s WeightedObjects) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
 func (s WeightedObjects) Less(i, j int) bool { return s[i].Weight > s[j].Weight }
 
-func GetTopTopicTokens(topicID int, tokens []string, tetaMatrix []*FloatArray, n int) (WeightedObjects, int) {
+func GetTopTopicTokens(topicID int, tm *TopicModel, n int) (WeightedObjects, int) {
 	var topicWords WeightedObjects
-	for i, tokenWeight := range tetaMatrix {
-		value := tokenWeight.GetValue()[topicID]
 
-		if value > 0 {
-			//fmt.Printf("-._%f\n", value)
-			wo := WeightedObject{ID: i, Weight: value}
-			topicWords = append(topicWords, wo)
+	for word_id, topics := range tm.TopicIndices {
+		for i, topic := range topics.Value {
+			if topicID == int(topic) {
+				topicWords = append(topicWords, WeightedObject{ID: int(word_id), Weight: tm.TokenWeights[word_id].Value[i]})
+				break
+			}
 		}
 	}
 	var ret WeightedObjects
@@ -37,13 +37,27 @@ func GetTopTopicTokens(topicID int, tokens []string, tetaMatrix []*FloatArray, n
 
 		for i, tw := range topicWords[:n] {
 			ret[i] = tw
-			ret[i].Object = tokens[tw.ID]
+			ret[i].Object = tm.GetToken()[tw.ID]
 		}
 		return ret, len(topicWords)
 	}
 	return WeightedObjects{}, 0
 }
 
+func GetTopicTokens(topicID int, tm *TopicModel) map[string]float32 {
+	topicWords := make(map[string]float32)
+	for word_id, topics := range tm.TopicIndices {
+		for i, topic := range topics.Value {
+			if topicID == int(topic) {
+				topicWords[tm.Token[word_id]] = tm.TokenWeights[word_id].Value[i]
+				break
+			}
+		}
+	}
+	return topicWords
+}
+
+//NewBatchFromData
 func NewBatchFromData(ids []string, title []string, data [][]string) *Batch {
 	// batch.id must be set to a unique GUID in a format of 00000000-0000-0000-0000-000000000000.
 	dic := make(map[string]int32)
