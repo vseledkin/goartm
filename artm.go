@@ -184,12 +184,12 @@ func ArtmRequestMasterComponentInfo(masterModelID int, config *GetMasterComponen
 }
 
 //ArtmRequestTopicModel
-func ArtmRequestTopicModel(masterModelID int, topicNames []string) (*TopicModel, error) {
+func ArtmRequestTopicModel(masterModelID int, topicNames []string, sparse bool) (*TopicModel, error) {
 	eps := float32(1e-8)
 	ml := Default_GetTopicModelArgs_MatrixLayout
 	config := &GetTopicModelArgs{Eps: &eps, MatrixLayout: &ml}
 	config.TopicName = topicNames
-	config.UseSparseFormat = &TRUE
+	config.UseSparseFormat = &sparse
 	message, err := proto.Marshal(config)
 	if err != nil {
 		return nil, fmt.Errorf("Protobuf GetTopicModelArgs marshaling error: %s", err)
@@ -570,11 +570,9 @@ func ArtmFitOfflineMasterModel(masterModelID int, batchFolder string, numCollect
 	return nil
 }
 
-func ArtmFitOnlineMasterModel(masterModelID int, batchFolder string, numCollectionPasses int32) error {
+func ArtmFitOnlineMasterModel(masterModelID int, batchFileName []string) error {
 	conf := new(FitOnlineMasterModelArgs)
-
-	//conf.BatchFolder = &batchFolder
-	//conf.NumCollectionPasses = &numCollectionPasses
+	conf.BatchFilename = batchFileName
 
 	message, err := proto.Marshal(conf)
 	if err != nil {
