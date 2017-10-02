@@ -1,10 +1,5 @@
 package goartm
 
-// #cgo darwin LDFLAGS: libartm.dylib
-// #cgo linux LDFLAGS: libartm.so
-// #include <stdlib.h>
-// #include "c_interface.h"
-import "C"
 import (
 	"fmt"
 	"math/rand"
@@ -12,6 +7,12 @@ import (
 
 	"github.com/golang/protobuf/proto"
 )
+
+// #cgo darwin LDFLAGS: -L. -lstdc++ -lm -lboost_system -lboost_thread-mt -lboost_iostreams -lboost_filesystem -lartm-static -lgflags -lgoogle-glog -linternals_proto -lmessages_proto -lprotobuf -lprotobuf-lite -lprotoc
+// #cgo linux LDFLAGS: -L. -lstdc++ -lm -lboost_system -lboost_thread -lboost_iostreams -lboost_filesystem -lartm-static -lgoogle-glog -lgflags -linternals_proto -lmessages_proto -lprotobuf -lprotobuf-lite -lprotoc
+// #include <stdlib.h>
+// #include "c_interface.h"
+import "C"
 
 var TRUE = true
 var FALSE = false
