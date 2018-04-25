@@ -4,11 +4,12 @@ import (
 	"fmt"
 	"math/rand"
 	"unsafe"
+	"time"
 
 	"github.com/golang/protobuf/proto"
 )
 
-// #cgo darwin LDFLAGS: -L. -lstdc++ -lm -lboost_system -lboost_thread-mt -lboost_iostreams -lboost_filesystem -lartm-static -lgflags -lgoogle-glog -linternals_proto -lmessages_proto -lprotobuf -lprotobuf-lite -lprotoc
+// #cgo darwin LDFLAGS: -L. -lstdc++ -lm -lboost_system -lboost_timer -lboost_thread-mt -lboost_iostreams -lboost_filesystem -lartm-static -lgflags -lgoogle-glog -linternals_proto -lmessages_proto -lprotobuf -lprotobuf-lite -lprotoc
 // #cgo linux LDFLAGS: -L. -lstdc++ -lm -lboost_system -lboost_thread -lboost_iostreams -lboost_filesystem -lartm-static -lgoogle-glog -lgflags -linternals_proto -lmessages_proto -lprotobuf -lprotobuf-lite -lprotoc
 // #include <stdlib.h>
 // #include "c_interface.h"
@@ -27,6 +28,10 @@ var ARTM_ERRORS = []string{
 	"ARTM_INVALID_OPERATION",
 	"ARTM_DISK_READ_ERROR",
 	"ARTM_DISK_WRITE_ERROR",
+}
+
+func init() {
+	rand.Seed(time.Now().UTC().UnixNano())
 }
 
 func NewGetThetaMatrixArgs() *GetThetaMatrixArgs {
@@ -437,7 +442,9 @@ func ArtmRequestThetaMatrix(masterModelID int, conf *GetThetaMatrixArgs) (*Theta
 	if err != nil {
 		return nil, err
 	}
-
+	if messageLength == 0 {
+		return nil, fmt.Errorf("ThetaMatrix is empty")
+	}
 	thetaMatrix := &ThetaMatrix{}
 	if err = artmCopyRequestedMessage(messageLength, thetaMatrix); err != nil {
 		return nil, err
