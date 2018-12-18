@@ -10,7 +10,7 @@ import (
 )
 
 // #cgo darwin LDFLAGS: -L. -lstdc++ -lm -lboost_system -lboost_timer -lboost_thread-mt -lboost_iostreams -lboost_filesystem -lartm-static -lgflags -lglog -linternals_proto -lmessages_proto -lprotobuf -lprotobuf-lite -lprotoc
-// #cgo linux LDFLAGS: -L. -lstdc++ -lm -lboost_system -lboost_thread -lboost_iostreams -lboost_filesystem -lartm-static -lglog -lgflags -linternals_proto -lmessages_proto -lprotobuf -lprotobuf-lite -lprotoc
+// #cgo linux LDFLAGS: -L. -lstdc++ -lm -lboost_system -lboost_thread -lboost_iostreams -lboost_filesystem -lartm-static -lgoogle-glog -lgflags -linternals_proto -lmessages_proto -lprotobuf -lprotobuf-lite -lprotoc
 // #include <stdlib.h>
 // #include "c_interface.h"
 import "C"
